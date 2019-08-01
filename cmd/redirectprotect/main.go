@@ -1,7 +1,8 @@
 package main
 
-import "fmt"
+import "github.com/labstack/echo"
 
 func main() {
-	fmt.Println("test")
+	e := echo.New()
+	e.Renderer = nil
 }
