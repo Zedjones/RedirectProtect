@@ -8,6 +8,6 @@ require (
 	github.com/labstack/gommon v0.2.9 // indirect
 	github.com/maxwellhealth/go-dotaccess v0.0.0-20150208020959-ae070a2d2a38 // indirect
 	github.com/oleiade/reflections v1.0.0 // indirect
-	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4 // indirect
+	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce // indirect
 )
