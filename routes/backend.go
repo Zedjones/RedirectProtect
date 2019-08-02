@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
+	"github.com/zedjones/redirectprotect/db"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -14,6 +15,6 @@ func RegisterURL(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	url, bytes = url, bytes
+	newRedirect := db.Redirect{URL: url, Password: string(bytes)}
 	return nil
 }
