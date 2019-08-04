@@ -8,5 +8,6 @@ import (
 func main() {
 	e := echo.New()
 	e.POST("/add_redirect", routes.RegisterURL)
+	e.GET("*", routes.GetRedirect)
 	e.Start(":1234")
 }
