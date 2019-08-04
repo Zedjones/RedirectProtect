@@ -18,6 +18,9 @@ func RegisterURL(c echo.Context) error {
 	passphrase := c.QueryParam("passphrase")
 	durationStr := c.QueryParam("ttl")
 	var err error
+	if url == "" || passphrase == "" {
+		return c.String(http.StatusBadRequest, "URL or passphrase not provided")
+	}
 	if durationStr != "" {
 		duration, err = time.ParseDuration(durationStr)
 		if err != nil {
@@ -51,4 +54,23 @@ func GetRedirect(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Shortened URL does not exist")
 	}
 	return err
+}
+
+func CheckPassphrase(c echo.Context) error {
+	redir := &db.Redirect{}
+	path := c.QueryParam("path")
+	passphrase := c.QueryParam("passphrase")
+	connection, err := db.GetConnection()
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Failed to acquire database connection")
+	}
+	err = connection.Collection(db.CollectionName).FindOne(bson.M{"path": path}, redir)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Shortened URL does not exist")
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(redir.Password), []byte(passphrase))
+	if err != nil {
+		c.Redirect(http.StatusFound, redir.URL)
+	}
+	return nil
 }
