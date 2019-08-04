@@ -2,9 +2,10 @@ package db
 
 import (
 	"errors"
+	"os"
 
 	"github.com/go-bongo/bongo"
-	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
 )
 
 const (
@@ -17,18 +18,13 @@ var config *bongo.Config
 var connection *bongo.Connection
 
 func loadConfig(configPath string) error {
-	if configPath != "" {
-		viper.AddConfigPath(configPath)
-	}
-	viper.AddConfigPath(defaultPath)
-	viper.SetConfigType("dotenv")
-	if err := viper.ReadInConfig(); err != nil {
+	if err := godotenv.Load(); err != nil {
 		return err
 	}
-	if !(viper.IsSet(connString)) {
+	if os.Getenv(connString) == "" {
 		return errors.New("Database configuration missing connection string or database name")
 	}
-	config = &bongo.Config{ConnectionString: viper.GetString(connString)}
+	config = &bongo.Config{ConnectionString: os.Getenv(connString)}
 	return nil
 }
 
