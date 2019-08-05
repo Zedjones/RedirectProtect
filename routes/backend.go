@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/zedjones/redirectprotect/internal"
+
 	"github.com/google/uuid"
 	"github.com/labstack/echo"
 	"github.com/zedjones/redirectprotect/db"
@@ -18,6 +20,7 @@ func RegisterURL(c echo.Context) error {
 	passphrase := c.QueryParam("passphrase")
 	durationStr := c.QueryParam("ttl")
 	var err error
+
 	if url == "" || passphrase == "" {
 		return c.String(http.StatusBadRequest, "URL or passphrase not provided")
 	}
@@ -27,17 +30,22 @@ func RegisterURL(c echo.Context) error {
 			return c.String(http.StatusInternalServerError, "Error parsing duration")
 		}
 	}
+
 	bytes, err := bcrypt.GenerateFromPassword([]byte(passphrase), 17)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	newRedirect := db.Redirect{URL: url, Password: string(bytes),
-		TTL: &duration, Path: uuid.New().String()}
+		TTL: duration.String(), Path: uuid.New().String()}
+
 	connection, err := db.GetConnection()
+	collection := connection.Collection(db.CollectionName)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Failed to acquired database connection")
 	}
-	err = connection.Collection(db.CollectionName).Save(&newRedirect)
+
+	err = collection.Save(&newRedirect)
+	go internal.StartTimeCheck(&newRedirect, collection)
 	return err
 }
 
