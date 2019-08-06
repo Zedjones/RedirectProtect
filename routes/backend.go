@@ -61,7 +61,7 @@ func GetRedirect(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Shortened URL does not exist")
 	}
-	return err
+	return c.Render(http.StatusOK, "redir.html", nil)
 }
 
 func CheckPassphrase(c echo.Context) error {
