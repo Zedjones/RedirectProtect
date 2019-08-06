@@ -78,7 +78,7 @@ func CheckPassphrase(c echo.Context) error {
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(redir.Password), []byte(passphrase))
 	if err != nil {
-		c.Redirect(http.StatusFound, redir.URL)
+		c.JSON(http.StatusOK, map[string]string{"url": redir.URL})
 	}
 	return nil
 }
