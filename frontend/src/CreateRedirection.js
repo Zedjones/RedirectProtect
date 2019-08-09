@@ -6,11 +6,12 @@ import TextField from '@material-ui/core/TextField';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-import { KeyboardTimePicker, TimePicker } from "@material-ui/pickers";
+import { KeyboardTimePicker } from "@material-ui/pickers";
 import Container from '@material-ui/core/Container';
 import lifecycle from 'react-pure-lifecycle';
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import LuxonUtils from "@date-io/luxon"
+import { DateTime } from "luxon"
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -45,8 +46,7 @@ const methods = {
 
 function SignIn() {
   const classes = useStyles();
-  const [selectedDate, handleDateChange] = useState(new Date());
-  handleDateChange(selectedDate.setHours(0, 10, 0, 0))
+  const [selectedDate, handleDateChange] = useState(new DateTime.fromObject({ hours: 0, minutes: 0 }));
 
   return (
     <MuiPickersUtilsProvider utils={LuxonUtils}>
@@ -88,12 +88,12 @@ function SignIn() {
               ampm={false}
               autoOk={true}
               views={["hours", "minutes"]}
-              label="Hours and minutes"
+              label="Shortened URL Lifespan"
               openTo="minutes"
               format="HH:mm"
               placeholder="00:10"
               value={selectedDate}
-              onChange={(val) => {handleDateChange(val); console.log(selectedDate)}}
+              onChange={(val) => { handleDateChange(val); console.log(selectedDate) }}
             />
             <Button
               type="submit"
