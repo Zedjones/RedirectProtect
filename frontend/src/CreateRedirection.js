@@ -12,6 +12,7 @@ import lifecycle from 'react-pure-lifecycle';
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import LuxonUtils from "@date-io/luxon"
 import { DateTime } from "luxon"
+import AccessTimeIcon from "@material-ui/icons/AccessTime"
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -40,7 +41,7 @@ const useStyles = makeStyles(theme => ({
 
 const methods = {
   componentDidMount() {
-    document.title = "Login"
+    document.title = "Redirect Protect"
   }
 }
 
@@ -91,8 +92,10 @@ function SignIn() {
               label="Shortened URL Lifespan"
               openTo="minutes"
               format="HH:mm"
+              keyboardIcon={React.createElement(AccessTimeIcon, null)}
               placeholder="00:10"
               value={selectedDate}
+              style={{width: "100%"}}
               onChange={(val) => { handleDateChange(val); console.log(selectedDate) }}
             />
             <Button
@@ -102,7 +105,7 @@ function SignIn() {
               color="primary"
               className={classes.submit}
             >
-              Sign In
+              Encrypt
           </Button>
           </form>
         </div>
