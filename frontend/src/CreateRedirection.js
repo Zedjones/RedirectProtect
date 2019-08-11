@@ -24,9 +24,8 @@ const useStyles = makeStyles(theme => ({
   },
   paper: {
     marginTop: theme.spacing(8),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
+    display: "flex",
+    alignItems: "center",
   },
   avatar: {
     margin: theme.spacing(1),
@@ -51,11 +50,18 @@ function SignIn() {
   const classes = useStyles();
   const [selectedDate, handleDateChange] = useState(new DateTime.fromObject({ hours: 0, minutes: 0 }));
   const [durationEnabled, handleDurationEnableChange] = useState(false);
+  const [URL, setURL] = useState('');
+  const [passphrase, setPassphrase] = useState('');
+
+  function createShortened(ev) {
+    ev.preventDefault();
+    console.log(URL, passphrase);
+  }
 
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
-      <Grid container display='flex' direction='column' alignItems='center'>
+      <Grid container className={classes.paper} direction="column">
         <Avatar className={classes.avatar}>
           <LockOutlinedIcon />
         </Avatar>
@@ -68,10 +74,11 @@ function SignIn() {
             margin="normal"
             required
             fullWidth
-            id="username"
+            id="url"
             label="URL"
-            name="username"
-            autoComplete="username"
+            name="url"
+            onChange={(ev) => setURL(ev.target.value)}
+            autoComplete="url"
             type="url"
             autoFocus
           />
@@ -84,6 +91,7 @@ function SignIn() {
             label="Passphrase"
             type="password"
             id="password"
+            onChange={(ev) => setPassphrase(ev.target.value)}
             autoComplete="current-password"
           />
           <Grid container direction='row' alignItems='center'>
