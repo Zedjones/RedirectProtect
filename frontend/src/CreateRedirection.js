@@ -50,6 +50,7 @@ const methods = {
 function SignIn() {
   const classes = useStyles();
   const [selectedDate, handleDateChange] = useState(new DateTime.fromObject({ hours: 0, minutes: 0 }));
+  const [durationEnabled, handleDurationEnableChange] = useState(false);
 
   return (
     <Container component="main" maxWidth="xs">
@@ -88,17 +89,19 @@ function SignIn() {
           <Grid container direction='row' alignItems='center'>
             <Grid item xs={2}>
               <Checkbox
-                value="checkedA"
+                checked={durationEnabled}
+                onChange={(event) => handleDurationEnableChange(event.target.checked)}
                 inputProps={{
                   'aria-label': 'primary checkbox',
                 }}
               />
-              </Grid>
-              <Grid item xs={10}>
+            </Grid>
+            <Grid item xs={10}>
               <MuiPickersUtilsProvider utils={LuxonUtils}>
                 <KeyboardTimePicker
                   clearable
                   ampm={false}
+                  disabled={!durationEnabled}
                   margin="normal"
                   autoOk={true}
                   views={["hours", "minutes"]}
