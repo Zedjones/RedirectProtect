@@ -30,6 +30,11 @@ func RegisterURL(c echo.Context) error {
 			return c.String(http.StatusInternalServerError, "Error parsing duration")
 		}
 	}
+	if strings.Contains(url, ":/") && !(strings.HasPrefix(url, "https://") || strings.HasPrefix(url, "http://")) {
+		return c.String(http.StatusBadRequest, "Invalid URL provided")
+	} else if !strings.Contains(url, ":/") {
+		url = "http://" + url
+	}
 
 	bytes, err := bcrypt.GenerateFromPassword([]byte(passphrase), 17)
 	if err != nil {
@@ -46,7 +51,7 @@ func RegisterURL(c echo.Context) error {
 
 	err = collection.Save(&newRedirect)
 	go internal.StartTimeCheck(&newRedirect, collection)
-	return err
+	return c.String(http.StatusOK, newRedirect.Path)
 }
 
 func GetRedirect(c echo.Context) error {
@@ -77,8 +82,8 @@ func CheckPassphrase(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Shortened URL does not exist")
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(redir.Password), []byte(passphrase))
-	if err != nil {
+	if err == nil {
 		c.JSON(http.StatusOK, map[string]string{"url": redir.URL})
 	}
-	return nil
+	return err
 }

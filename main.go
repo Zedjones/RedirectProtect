@@ -3,8 +3,10 @@ package main
 import (
 	"html/template"
 	"io"
+	"net/http"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"github.com/zedjones/redirectprotect/internal"
 	"github.com/zedjones/redirectprotect/routes"
 )
@@ -29,6 +31,10 @@ func main() {
 	renderer := &TemplateRenderer{
 		templates: template.Must(template.ParseGlob("frontend/build/*.html")),
 	}
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:3000", "http://localhost:5000"},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+	}))
 	e.Renderer = renderer
 	e.Static("/", "frontend/build")
 	e.POST("/add_redirect", routes.RegisterURL)

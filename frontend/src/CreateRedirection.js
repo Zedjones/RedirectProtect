@@ -56,7 +56,31 @@ function SignIn() {
   function createShortened(ev) {
     ev.preventDefault();
     console.log(URL, passphrase);
-  }
+    let ttl = "";
+    if (durationEnabled && selectedDate.c != null) {
+      ttl = `${selectedDate.c.hour}h${selectedDate.c.minute}m`
+    }
+    let postObj = {
+      "url": URL,
+      "passphrase": passphrase,
+      "ttl": ttl
+    };
+    console.log(postObj);
+    let queryParams = `?url=${URL}&passphrase=${passphrase}&ttl=${ttl}`
+    let postUrl = `http://localhost:1234/add_redirect${queryParams}`;
+
+    fetch(postUrl, {
+      method: 'POST',
+    })
+      .then(response => {
+        if (response.status === 200) {
+        }
+        else {
+        }
+      })
+      .catch(((_) => {
+      }))
+  };
 
   return (
     <Container component="main" maxWidth="xs">
@@ -68,7 +92,7 @@ function SignIn() {
         <Typography component="h1" variant="h5">
           Shorten & Encrypt URL
           </Typography>
-        <form className={classes.form} noValidate>
+        <form className={classes.form} noValidate onSubmit={(e) => createShortened(e)}>
           <TextField
             variant="outlined"
             margin="normal"
