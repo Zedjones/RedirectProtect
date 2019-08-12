@@ -3,6 +3,7 @@ package internal
 import (
 	"time"
 
+	"github.com/getlantern/deepcopy"
 	"github.com/go-bongo/bongo"
 	"github.com/zedjones/redirectprotect/db"
 	"gopkg.in/mgo.v2/bson"
@@ -18,7 +19,13 @@ func AddChecks() error {
 	collection := connection.Collection(db.CollectionName)
 	allRedirs := collection.Find(bson.M{})
 	for allRedirs.Next(redir) {
-		go StartTimeCheck(redir, collection)
+		//deepcopy our redirection
+		var redirCopy *db.Redirect
+		err := deepcopy.Copy(&redirCopy, &redir)
+		if err != nil {
+			return err
+		}
+		go StartTimeCheck(redirCopy, collection)
 	}
 	return err
 }
