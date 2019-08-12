@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
+import Fade from '@material-ui/core/Fade';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import TextField from '@material-ui/core/TextField';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
@@ -51,24 +53,19 @@ function SignIn() {
   const [selectedDate, handleDateChange] = useState(new DateTime.fromObject({ hours: 0, minutes: 0 }));
   const [durationEnabled, handleDurationEnableChange] = useState(false);
   const [URL, setURL] = useState('');
+  const [loading, setLoading] = React.useState(false);
   const [passphrase, setPassphrase] = useState('');
 
   function createShortened(ev) {
     ev.preventDefault();
-    console.log(URL, passphrase);
     let ttl = "";
     if (durationEnabled && selectedDate.c != null) {
       ttl = `${selectedDate.c.hour}h${selectedDate.c.minute}m`
     }
-    let postObj = {
-      "url": URL,
-      "passphrase": passphrase,
-      "ttl": ttl
-    };
-    console.log(postObj);
     let queryParams = `?url=${URL}&passphrase=${passphrase}&ttl=${ttl}`
     let postUrl = `http://localhost:1234/add_redirect${queryParams}`;
 
+    setLoading(true);
     fetch(postUrl, {
       method: 'POST',
     })
@@ -77,8 +74,10 @@ function SignIn() {
         }
         else {
         }
+        setLoading(false);
       })
       .catch(((_) => {
+        setLoading(false);
       }))
   };
 
@@ -160,6 +159,15 @@ function SignIn() {
             Encrypt
           </Button>
         </form>
+        <Fade
+          in={loading}
+          style={{
+            transitionDelay: loading ? '800ms' : '0ms',
+          }}
+          unmountOnExit
+        >
+          <CircularProgress />
+        </Fade>
       </Grid>
     </Container >
   );
