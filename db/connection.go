@@ -17,7 +17,7 @@ const (
 var config *bongo.Config
 var connection *bongo.Connection
 
-func loadConfig(configPath string) error {
+func loadConfig() error {
 	if err := godotenv.Load(); err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func GetConnection() (*bongo.Connection, error) {
 	if connection == nil {
 		var err error
 		if config == nil {
-			if err = loadConfig(""); err != nil {
+			if err = loadConfig(); err != nil {
 				return nil, err
 			}
 		}
