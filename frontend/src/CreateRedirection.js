@@ -96,6 +96,7 @@ function SignIn() {
             variant="outlined"
             margin="normal"
             required
+            disabled={loading}
             fullWidth
             id="url"
             label="URL"
@@ -109,6 +110,7 @@ function SignIn() {
             variant="outlined"
             margin="normal"
             required
+            disabled={loading}
             fullWidth
             name="password"
             label="Passphrase"
@@ -121,6 +123,7 @@ function SignIn() {
             <Grid item xs={2}>
               <Checkbox
                 checked={durationEnabled}
+                disabled={loading}
                 onChange={(event) => handleDurationEnableChange(event.target.checked)}
                 inputProps={{
                   'aria-label': 'primary checkbox',
@@ -132,7 +135,7 @@ function SignIn() {
                 <KeyboardTimePicker
                   clearable
                   ampm={false}
-                  disabled={!durationEnabled}
+                  disabled={!durationEnabled || loading}
                   margin="normal"
                   autoOk={true}
                   views={["hours", "minutes"]}
@@ -155,6 +158,7 @@ function SignIn() {
             variant="contained"
             color="primary"
             className={classes.submit}
+            disabled={loading}
           >
             Encrypt
           </Button>
