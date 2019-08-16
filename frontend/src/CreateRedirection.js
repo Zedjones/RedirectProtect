@@ -16,7 +16,7 @@ import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import LuxonUtils from "@date-io/luxon"
 import { DateTime } from "luxon"
 import AccessTimeIcon from "@material-ui/icons/AccessTime"
-import { Grid } from '@material-ui/core';
+import { Grid, List, ListItem, ListItemText } from '@material-ui/core';
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -40,6 +40,9 @@ const useStyles = makeStyles(theme => ({
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
+  list: {
+    marginTop: theme.spacing(7.5)
+  }
 }));
 
 const methods = {
@@ -80,6 +83,14 @@ function SignIn() {
         setLoading(false);
       }))
   };
+
+  function generate(element) {
+    return [0, 1, 2, 4, 5, 6].map(value =>
+      React.cloneElement(element, {
+        key: value,
+      }),
+    );
+  }
 
   return (
     <Container component="main" maxWidth="xs">
@@ -172,6 +183,24 @@ function SignIn() {
         >
           <CircularProgress />
         </Fade>
+        <List className={classes.list}>
+          {generate(
+            <ListItem>
+              <Grid container direction="row" spacing={2}>
+                <Grid item>
+                  <ListItemText
+                    primary="Single-line item"
+                  />
+                </Grid>
+                <Grid item>
+                  <ListItemText
+                    primary="Single-line item"
+                  />
+                </Grid>
+              </Grid>
+            </ListItem>,
+          )}
+        </List>
       </Grid>
     </Container >
   );
