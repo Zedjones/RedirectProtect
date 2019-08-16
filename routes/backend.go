@@ -36,7 +36,7 @@ func RegisterURL(c echo.Context) error {
 		url = "http://" + url
 	}
 
-	bytes, err := bcrypt.GenerateFromPassword([]byte(passphrase), 17)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(passphrase), 15)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
