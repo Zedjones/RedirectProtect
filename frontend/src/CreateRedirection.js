@@ -84,14 +84,6 @@ function SignIn() {
       }))
   };
 
-  function generate(element) {
-    return [0, 1, 2, 4, 5, 6].map(value =>
-      React.cloneElement(element, {
-        key: value,
-      }),
-    );
-  }
-
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
@@ -184,7 +176,6 @@ function SignIn() {
           <CircularProgress />
         </Fade>
         <List className={classes.list}>
-          {generate(
             <ListItem>
               <Grid container direction="row" spacing={2}>
                 <Grid item>
@@ -198,8 +189,7 @@ function SignIn() {
                   />
                 </Grid>
               </Grid>
-            </ListItem>,
-          )}
+            </ListItem>
         </List>
       </Grid>
     </Container >
