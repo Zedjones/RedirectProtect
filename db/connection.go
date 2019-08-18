@@ -29,7 +29,7 @@ func loadConfig() error {
 	return nil
 }
 
-func GetConnection() (*bongo.Connection, error) {
+func GetConnection() (Connection, error) {
 	if connection == nil {
 		var err error
 		if config == nil {
@@ -38,7 +38,7 @@ func GetConnection() (*bongo.Connection, error) {
 			}
 		}
 		connection, err = bongo.Connect(config)
-		return connection, err
+		return BongoConnection{connection}, err
 	}
-	return connection, nil
+	return BongoConnection{connection}, nil
 }

@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/getlantern/deepcopy"
-	"github.com/go-bongo/bongo"
 	"github.com/zedjones/redirectprotect/db"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -30,7 +29,7 @@ func AddChecks() error {
 	return err
 }
 
-func StartTimeCheck(redir *db.Redirect, collection *bongo.Collection) error {
+func StartTimeCheck(redir *db.Redirect, collection db.Collection) error {
 	var err error
 	ttl, err := time.ParseDuration(redir.TTL)
 	if err != nil {
