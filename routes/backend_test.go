@@ -3,34 +3,17 @@ package routes
 import (
 	"errors"
 	"net/http"
-	"os"
-	"os/exec"
 	"testing"
-	"time"
 
 	"github.com/franela/goblin"
-	"github.com/go-bongo/bongo"
-	mock_echo "github.com/zedjones/redirectprotect/test/mocks"
+	"github.com/google/uuid"
+	"github.com/zedjones/redirectprotect/db"
+	"github.com/zedjones/redirectprotect/test/mocks"
 
 	"github.com/golang/mock/gomock"
 )
 
-func startMongoDocker(start bool) {
-	composePath := os.Getenv("COMPOSEPATH")
-	var cmd *exec.Cmd
-	if start {
-		cmd = exec.Command("/usr/bin/docker-compose", "up")
-	} else {
-		cmd = exec.Command("/usr/bin/docker-compose", "down")
-	}
-	cmd.Dir = composePath
-	dur, _ := time.ParseDuration(".5s")
-	time.Sleep(dur)
-	cmd.Start()
-}
-
 func TestRegisterURL(t *testing.T) {
-	startMongoDocker(true)
 	g := goblin.Goblin(t)
 	g.Describe("Register URL", func() {
 		g.It("should fail when no passphrase or URL are provided", func() {
@@ -48,57 +31,63 @@ func TestRegisterURL(t *testing.T) {
 		g.It("should fail when it cannot acquire a database connection", func() {
 			g.Assert(testDatabaseConnFail(t)).Equal(nil)
 		})
+		g.It("should fail when collection fails to save redirect", func() {
+			g.Assert(testDatabaseSaveFail(t)).Equal(nil)
+		})
+		g.It("succeeds when nothing above is happening", func() {
+			g.Assert(testSuccessCase(t, g)).Equal(nil)
+		})
 	})
 }
 
 func testNoURLPassphrase(t *testing.T) error {
 	ctrl := gomock.NewController(t)
-	m := mock_echo.NewMockContext(ctrl)
+	mockEcho := mocks.NewMockContext(ctrl)
 
 	gomock.InOrder(
-		m.EXPECT().QueryParam("url"),
-		m.EXPECT().QueryParam("passphrase"),
-		m.EXPECT().QueryParam("ttl"),
+		mockEcho.EXPECT().QueryParam("url"),
+		mockEcho.EXPECT().QueryParam("passphrase"),
+		mockEcho.EXPECT().QueryParam("ttl"),
 	)
 
-	m.EXPECT().String(http.StatusBadRequest, "URL or passphrase not provided")
+	mockEcho.EXPECT().String(http.StatusBadRequest, "URL or passphrase not provided")
 
-	return RegisterURL(m)
+	return RegisterURL(mockEcho)
 }
 
 func testBadDuration(t *testing.T) error {
 	ctrl := gomock.NewController(t)
-	m := mock_echo.NewMockContext(ctrl)
+	mockEcho := mocks.NewMockContext(ctrl)
 
 	gomock.InOrder(
-		m.EXPECT().QueryParam("url").Return("some_url"),
-		m.EXPECT().QueryParam("passphrase").Return("some_passphrase"),
-		m.EXPECT().QueryParam("ttl").Return("not_a_duration"),
+		mockEcho.EXPECT().QueryParam("url").Return("some_url"),
+		mockEcho.EXPECT().QueryParam("passphrase").Return("some_passphrase"),
+		mockEcho.EXPECT().QueryParam("ttl").Return("not_a_duration"),
 	)
 
-	m.EXPECT().String(http.StatusInternalServerError, "Error parsing duration")
+	mockEcho.EXPECT().String(http.StatusInternalServerError, "Error parsing duration")
 
-	return RegisterURL(m)
+	return RegisterURL(mockEcho)
 }
 
 func testBadURL(t *testing.T) error {
 	ctrl := gomock.NewController(t)
-	m := mock_echo.NewMockContext(ctrl)
+	mockEcho := mocks.NewMockContext(ctrl)
 
 	gomock.InOrder(
-		m.EXPECT().QueryParam("url").Return("magnet:?some_magnet_url"),
-		m.EXPECT().QueryParam("passphrase").Return("some_passphrase"),
-		m.EXPECT().QueryParam("ttl").Return(""),
+		mockEcho.EXPECT().QueryParam("url").Return("magnet:?some_magnet_url"),
+		mockEcho.EXPECT().QueryParam("passphrase").Return("some_passphrase"),
+		mockEcho.EXPECT().QueryParam("ttl").Return(""),
 	)
 
-	m.EXPECT().String(http.StatusBadRequest, "Invalid URL provided")
+	mockEcho.EXPECT().String(http.StatusBadRequest, "Invalid URL provided")
 
-	return RegisterURL(m)
+	return RegisterURL(mockEcho)
 }
 
 func testGeneratePasswordFail(t *testing.T) error {
 	ctrl := gomock.NewController(t)
-	m := mock_echo.NewMockContext(ctrl)
+	mockEcho := mocks.NewMockContext(ctrl)
 
 	oldGenerate := generateFromPassword
 	defer func() { generateFromPassword = oldGenerate }()
@@ -108,19 +97,19 @@ func testGeneratePasswordFail(t *testing.T) error {
 	}
 
 	gomock.InOrder(
-		m.EXPECT().QueryParam("url").Return("google.com"),
-		m.EXPECT().QueryParam("passphrase").Return("some_passphrase"),
-		m.EXPECT().QueryParam("ttl").Return(""),
+		mockEcho.EXPECT().QueryParam("url").Return("google.com"),
+		mockEcho.EXPECT().QueryParam("passphrase").Return("some_passphrase"),
+		mockEcho.EXPECT().QueryParam("ttl").Return(""),
 	)
 
-	m.EXPECT().String(http.StatusInternalServerError, "Failed to generate password")
+	mockEcho.EXPECT().String(http.StatusInternalServerError, "Failed to generate password")
 
-	return RegisterURL(m)
+	return RegisterURL(mockEcho)
 }
 
 func testDatabaseConnFail(t *testing.T) error {
 	ctrl := gomock.NewController(t)
-	m := mock_echo.NewMockContext(ctrl)
+	mockEcho := mocks.NewMockContext(ctrl)
 
 	oldGenerate := generateFromPassword
 	defer func() { generateFromPassword = oldGenerate }()
@@ -132,17 +121,117 @@ func testDatabaseConnFail(t *testing.T) error {
 	oldGetConn := getConnection
 	defer func() { getConnection = oldGetConn }()
 
-	getConnection = func() (*bongo.Connection, error) {
+	getConnection = func() (db.Connection, error) {
 		return nil, errors.New("some error")
 	}
 
 	gomock.InOrder(
-		m.EXPECT().QueryParam("url").Return("google.com"),
-		m.EXPECT().QueryParam("passphrase").Return("some_passphrase"),
-		m.EXPECT().QueryParam("ttl").Return(""),
+		mockEcho.EXPECT().QueryParam("url").Return("google.com"),
+		mockEcho.EXPECT().QueryParam("passphrase").Return("some_passphrase"),
+		mockEcho.EXPECT().QueryParam("ttl").Return(""),
 	)
 
-	m.EXPECT().String(http.StatusInternalServerError, "Failed to acquire database connection")
+	mockEcho.EXPECT().String(http.StatusInternalServerError, "Failed to acquire database connection")
 
-	return RegisterURL(m)
+	return RegisterURL(mockEcho)
+}
+
+func testDatabaseSaveFail(t *testing.T) error {
+	ctrl := gomock.NewController(t)
+	mockEcho := mocks.NewMockContext(ctrl)
+	mockConnection := mocks.NewMockConnection(ctrl)
+	mockCollection := mocks.NewMockCollection(ctrl)
+
+	oldGenerate := generateFromPassword
+	defer func() { generateFromPassword = oldGenerate }()
+
+	generateFromPassword = func(pass []byte, cost int) ([]byte, error) {
+		return []byte("some test"), nil
+	}
+
+	oldGetConn := getConnection
+	defer func() { getConnection = oldGetConn }()
+
+	getConnection = func() (db.Connection, error) {
+		return mockConnection, nil
+	}
+
+	oldUUID := uuidNew
+	defer func() { uuidNew = oldUUID }()
+
+	myUUID := uuid.New()
+
+	uuidNew = func() uuid.UUID {
+		return myUUID
+	}
+
+	gomock.InOrder(
+		mockEcho.EXPECT().QueryParam("url").Return("google.com"),
+		mockEcho.EXPECT().QueryParam("passphrase").Return("some_passphrase"),
+		mockEcho.EXPECT().QueryParam("ttl").Return(""),
+	)
+
+	expectedRedirect := db.Redirect{URL: "http://google.com", Password: "some test", TTL: "0s",
+		Path: myUUID.String()}
+
+	mockCollection.EXPECT().Save(&expectedRedirect).Return(errors.New("some error"))
+	mockConnection.EXPECT().Collection("redirections").Return(mockCollection)
+
+	mockEcho.EXPECT().String(http.StatusInternalServerError, "Failed to save redirect to the database")
+
+	return RegisterURL(mockEcho)
+}
+
+func testSuccessCase(t *testing.T, g *goblin.G) error {
+	ctrl := gomock.NewController(t)
+	mockEcho := mocks.NewMockContext(ctrl)
+	mockConnection := mocks.NewMockConnection(ctrl)
+	mockCollection := mocks.NewMockCollection(ctrl)
+
+	oldGenerate := generateFromPassword
+	defer func() { generateFromPassword = oldGenerate }()
+
+	generateFromPassword = func(pass []byte, cost int) ([]byte, error) {
+		return []byte("some test"), nil
+	}
+
+	oldGetConn := getConnection
+	defer func() { getConnection = oldGetConn }()
+
+	getConnection = func() (db.Connection, error) {
+		return mockConnection, nil
+	}
+
+	oldUUID := uuidNew
+	defer func() { uuidNew = oldUUID }()
+
+	myUUID := uuid.New()
+
+	uuidNew = func() uuid.UUID {
+		return myUUID
+	}
+
+	oldStartTimeCheck := startTimeCheck
+	defer func() { startTimeCheck = oldStartTimeCheck }()
+
+	startTimeCheck = func(redir *db.Redirect, coll db.Collection) error {
+		g.Assert(coll).Equal(mockCollection)
+		return nil
+	}
+
+	gomock.InOrder(
+		mockEcho.EXPECT().QueryParam("url").Return("google.com"),
+		mockEcho.EXPECT().QueryParam("passphrase").Return("some_passphrase"),
+		mockEcho.EXPECT().QueryParam("ttl").Return(""),
+	)
+
+	expectedRedirect := db.Redirect{URL: "http://google.com", Password: "some test", TTL: "0s",
+		Path: myUUID.String()}
+
+	mockCollection.EXPECT().Save(&expectedRedirect).Return(nil)
+	mockConnection.EXPECT().Collection("redirections").Return(mockCollection)
+
+	mockEcho.EXPECT().String(http.StatusOK, expectedRedirect.Path)
+
+	return RegisterURL(mockEcho)
 }

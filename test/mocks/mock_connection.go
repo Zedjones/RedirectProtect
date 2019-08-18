@@ -2,7 +2,7 @@
 // Source: github.com/zedjones/redirectprotect/db (interfaces: Connection)
 
 // Package mock_db is a generated GoMock package.
-package mock_db
+package mocks
 
 import (
 	reflect "reflect"

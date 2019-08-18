@@ -2,7 +2,7 @@
 // Source: github.com/labstack/echo (interfaces: Context)
 
 // Package mock_echo is a generated GoMock package.
-package mock_echo
+package mocks
 
 import (
 	io "io"
