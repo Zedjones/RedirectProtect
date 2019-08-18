@@ -14,6 +14,14 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+//doing this because Go is annoying and I want to test stuff
+var (
+	generateFromPassword = bcrypt.GenerateFromPassword
+	getConnection        = db.GetConnection
+	startTimeCheck       = internal.StartTimeCheck
+	uuidNew              = uuid.New
+)
+
 func RegisterURL(c echo.Context) error {
 	var duration time.Duration
 	url := c.QueryParam("url")
@@ -30,27 +38,28 @@ func RegisterURL(c echo.Context) error {
 			return c.String(http.StatusInternalServerError, "Error parsing duration")
 		}
 	}
-	if strings.Contains(url, ":/") && !(strings.HasPrefix(url, "https://") || strings.HasPrefix(url, "http://")) {
+	if (strings.Contains(url, ":/") || strings.Contains(url, ":?")) &&
+		!(strings.HasPrefix(url, "https://") || strings.HasPrefix(url, "http://")) {
 		return c.String(http.StatusBadRequest, "Invalid URL provided")
 	} else if !strings.Contains(url, ":/") {
 		url = "http://" + url
 	}
 
-	bytes, err := bcrypt.GenerateFromPassword([]byte(passphrase), 15)
+	bytes, err := generateFromPassword([]byte(passphrase), 15)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	newRedirect := db.Redirect{URL: url, Password: string(bytes),
-		TTL: duration.String(), Path: uuid.New().String()}
+		TTL: duration.String(), Path: uuidNew().String()}
 
-	connection, err := db.GetConnection()
+	connection, err := getConnection()
 	collection := connection.Collection(db.CollectionName)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Failed to acquired database connection")
 	}
 
 	err = collection.Save(&newRedirect)
-	go internal.StartTimeCheck(&newRedirect, collection)
+	go startTimeCheck(&newRedirect, collection)
 	return c.String(http.StatusOK, newRedirect.Path)
 }
 

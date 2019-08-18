@@ -8,6 +8,7 @@ require (
 	github.com/coreos/etcd v3.3.13+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f // indirect
+	github.com/franela/goblin v0.0.0-20181003173013-ead4ad1d2727
 	github.com/getlantern/deepcopy v0.0.0-20160317154340-7f45deb8130a
 	github.com/go-bongo/bongo v0.10.4
 	github.com/go-kit/kit v0.9.0 // indirect
@@ -50,5 +51,6 @@ require (
 	google.golang.org/genproto v0.0.0-20190801165951-fa694d86fc64 // indirect
 	google.golang.org/grpc v1.22.1 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
+	gotest.tools v2.2.0+incompatible
 	honnef.co/go/tools v0.0.1-2019.2.2 // indirect
 )
