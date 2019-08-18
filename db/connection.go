@@ -21,10 +21,11 @@ func loadConfig() error {
 	if err := godotenv.Load(); err != nil {
 		return err
 	}
-	if os.Getenv(connString) == "" {
+	loadedConnString := os.Getenv(connString)
+	if loadedConnString == "" {
 		return errors.New("Database configuration missing connection string or database name")
 	}
-	config = &bongo.Config{ConnectionString: os.Getenv(connString)}
+	config = &bongo.Config{ConnectionString: loadedConnString}
 	return nil
 }
 

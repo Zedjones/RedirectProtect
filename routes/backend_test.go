@@ -3,7 +3,10 @@ package routes
 import (
 	"errors"
 	"net/http"
+	"os"
+	"os/exec"
 	"testing"
+	"time"
 
 	"github.com/franela/goblin"
 	"github.com/go-bongo/bongo"
@@ -12,7 +15,22 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
+func startMongoDocker(start bool) {
+	composePath := os.Getenv("COMPOSEPATH")
+	var cmd *exec.Cmd
+	if start {
+		cmd = exec.Command("/usr/bin/docker-compose", "up")
+	} else {
+		cmd = exec.Command("/usr/bin/docker-compose", "down")
+	}
+	cmd.Dir = composePath
+	dur, _ := time.ParseDuration(".5s")
+	time.Sleep(dur)
+	cmd.Start()
+}
+
 func TestRegisterURL(t *testing.T) {
+	startMongoDocker(true)
 	g := goblin.Goblin(t)
 	g.Describe("Register URL", func() {
 		g.It("should fail when no passphrase or URL are provided", func() {

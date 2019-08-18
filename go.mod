@@ -14,6 +14,7 @@ require (
 	github.com/go-kit/kit v0.9.0 // indirect
 	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6 // indirect
 	github.com/golang/mock v1.3.1
+	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/pprof v0.0.0-20190723021845-34ac40c74b70 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/grpc-ecosystem/grpc-gateway v1.9.5 // indirect
@@ -41,7 +42,10 @@ require (
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.3.0
 	github.com/ugorji/go v1.1.7 // indirect
+	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
+	github.com/xdg/stringprep v1.0.0 // indirect
 	go.etcd.io/bbolt v1.3.3 // indirect
+	go.mongodb.org/mongo-driver v1.1.0
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56 // indirect
 	golang.org/x/image v0.0.0-20190729225735-1bd0cf576493 // indirect

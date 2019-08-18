@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
+
 pushd routes > /dev/null
-go test
+COMPOSEPATH=$SCRIPTPATH go test -cover
 popd > /dev/null
