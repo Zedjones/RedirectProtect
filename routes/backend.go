@@ -14,7 +14,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-//doing this because Go is annoying and I want to test stuff
+//Doing this because I want to be able to mock these functions
 var (
 	generateFromPassword = bcrypt.GenerateFromPassword
 	getConnection        = db.GetConnection
@@ -53,12 +53,15 @@ func RegisterURL(c echo.Context) error {
 		TTL: duration.String(), Path: uuidNew().String()}
 
 	connection, err := getConnection()
-	collection := connection.Collection(db.CollectionName)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "Failed to acquired database connection")
+		return c.String(http.StatusInternalServerError, "Failed to acquire database connection")
 	}
+	collection := connection.Collection(db.CollectionName)
 
 	err = collection.Save(&newRedirect)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Failed to save redirect to the database")
+	}
 	go startTimeCheck(&newRedirect, collection)
 	return c.String(http.StatusOK, newRedirect.Path)
 }

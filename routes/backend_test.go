@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/franela/goblin"
+	"github.com/go-bongo/bongo"
 	mock_echo "github.com/zedjones/redirectprotect/test/mocks"
 
 	"github.com/golang/mock/gomock"
@@ -25,6 +26,9 @@ func TestRegisterURL(t *testing.T) {
 		})
 		g.It("should fail when bcrypt fails to hash the password", func() {
 			g.Assert(testGeneratePasswordFail(t)).Equal(nil)
+		})
+		g.It("should fail when it cannot acquire a database connection", func() {
+			g.Assert(testDatabaseConnFail(t)).Equal(nil)
 		})
 	})
 }
@@ -92,6 +96,35 @@ func testGeneratePasswordFail(t *testing.T) error {
 	)
 
 	m.EXPECT().String(http.StatusInternalServerError, "Failed to generate password")
+
+	return RegisterURL(m)
+}
+
+func testDatabaseConnFail(t *testing.T) error {
+	ctrl := gomock.NewController(t)
+	m := mock_echo.NewMockContext(ctrl)
+
+	oldGenerate := generateFromPassword
+	defer func() { generateFromPassword = oldGenerate }()
+
+	generateFromPassword = func(pass []byte, cost int) ([]byte, error) {
+		return []byte("some test"), nil
+	}
+
+	oldGetConn := getConnection
+	defer func() { getConnection = oldGetConn }()
+
+	getConnection = func() (*bongo.Connection, error) {
+		return nil, errors.New("some error")
+	}
+
+	gomock.InOrder(
+		m.EXPECT().QueryParam("url").Return("google.com"),
+		m.EXPECT().QueryParam("passphrase").Return("some_passphrase"),
+		m.EXPECT().QueryParam("ttl").Return(""),
+	)
+
+	m.EXPECT().String(http.StatusInternalServerError, "Failed to acquire database connection")
 
 	return RegisterURL(m)
 }
