@@ -34,7 +34,7 @@ func TestRegisterURL(t *testing.T) {
 		g.It("should fail when collection fails to save redirect", func() {
 			g.Assert(testDatabaseSaveFail(t)).Equal(nil)
 		})
-		g.It("succeeds when nothing above is happening", func() {
+		g.It("should succeed when nothing above is happening", func() {
 			g.Assert(testSuccessCase(t, g)).Equal(nil)
 		})
 	})

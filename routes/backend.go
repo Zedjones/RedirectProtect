@@ -67,9 +67,8 @@ func RegisterURL(c echo.Context) error {
 }
 
 func GetRedirect(c echo.Context) error {
-	var err error
 	redir := &db.Redirect{}
-	connection, err := db.GetConnection()
+	connection, err := getConnection()
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Failed to acquire database connection")
 	}
