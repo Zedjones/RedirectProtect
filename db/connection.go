@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	defaultPath    = ".env"
+	defaultPath = ".env"
+	//CollectionName is the name of the collection to save redirections to
 	CollectionName = "redirections"
 	connString     = "CONNECTION_STRING"
 )
@@ -29,6 +30,8 @@ func loadConfig() error {
 	return nil
 }
 
+//GetConnection returns a connection to mongo, in this case
+//a BongoCollection
 func GetConnection() (Connection, error) {
 	if connection == nil {
 		var err error
