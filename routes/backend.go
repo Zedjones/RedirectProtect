@@ -16,10 +16,11 @@ import (
 
 //Doing this because I want to be able to mock these functions
 var (
-	generateFromPassword = bcrypt.GenerateFromPassword
-	getConnection        = db.GetConnection
-	startTimeCheck       = internal.StartTimeCheck
-	uuidNew              = uuid.New
+	generateFromPassword   = bcrypt.GenerateFromPassword
+	compareHashAndPassword = bcrypt.CompareHashAndPassword
+	getConnection          = db.GetConnection
+	startTimeCheck         = internal.StartTimeCheck
+	uuidNew                = uuid.New
 )
 
 func RegisterURL(c echo.Context) error {
@@ -84,7 +85,7 @@ func CheckPassphrase(c echo.Context) error {
 	redir := &db.Redirect{}
 	path := c.QueryParam("path")
 	passphrase := c.QueryParam("passphrase")
-	connection, err := db.GetConnection()
+	connection, err := getConnection()
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Failed to acquire database connection")
 	}
@@ -92,7 +93,7 @@ func CheckPassphrase(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Shortened URL does not exist")
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(redir.Password), []byte(passphrase))
+	err = compareHashAndPassword([]byte(redir.Password), []byte(passphrase))
 	if err == nil {
 		c.JSON(http.StatusOK, map[string]string{"url": redir.URL})
 	}
