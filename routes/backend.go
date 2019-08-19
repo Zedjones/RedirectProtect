@@ -94,8 +94,8 @@ func CheckPassphrase(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Shortened URL does not exist")
 	}
 	err = compareHashAndPassword([]byte(redir.Password), []byte(passphrase))
-	if err == nil {
-		c.JSON(http.StatusOK, map[string]string{"url": redir.URL})
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Bad password provided.")
 	}
-	return err
+	return c.JSON(http.StatusOK, map[string]string{"url": redir.URL})
 }
