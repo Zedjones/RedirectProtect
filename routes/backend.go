@@ -23,6 +23,9 @@ var (
 	uuidNew                = uuid.New
 )
 
+//RegisterURL registers a URL in the database with the corresponding password and
+//duration, if provided. 15 rounds of bcrypt are done on the password before
+//storing it, and the shortened path returned is a generated UUID
 func RegisterURL(c echo.Context) error {
 	var duration time.Duration
 	url := c.QueryParam("url")
@@ -67,6 +70,9 @@ func RegisterURL(c echo.Context) error {
 	return c.String(http.StatusOK, newRedirect.Path)
 }
 
+//GetRedirect is the default GET handler, and simply returns a page asking for the password if
+//the shortened URL exists in the DB. Once the user inputs the password, a call to CheckPassphrase
+//is made
 func GetRedirect(c echo.Context) error {
 	redir := &db.Redirect{}
 	connection, err := getConnection()
@@ -81,6 +87,8 @@ func GetRedirect(c echo.Context) error {
 	return c.Render(http.StatusOK, "redir.html", nil)
 }
 
+//CheckPassphrase checks that the passphrase is valid for the provided path, and returns a JSON object
+//containing the URL that was shortened/encrypted
 func CheckPassphrase(c echo.Context) error {
 	redir := &db.Redirect{}
 	path := c.QueryParam("path")
