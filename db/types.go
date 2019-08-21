@@ -10,26 +10,40 @@ type Connection interface {
 	Collection(name string) Collection
 }
 
+//Collection is an interface that specifies all methods from
+//*bongo.Collection that we need/need to mock
+type Collection interface {
+	Save(doc bongo.Document) error
+	Find(query interface{}) ResultSet
+	FindOne(query interface{}, doc interface{}) error
+	DeleteDocument(doc bongo.Document) error
+}
+
 //BongoConnection is just a wrapper for *bongo.Connection for mocking
 type BongoConnection struct {
 	*bongo.Connection
 }
 
-//Collection is an interface that specifies all methods from
-//*bongo.Collection that we need/need to mock
-type Collection interface {
-	Save(doc bongo.Document) error
-	Find(query interface{}) *bongo.ResultSet
-	FindOne(query interface{}, doc interface{}) error
-	DeleteDocument(doc bongo.Document) error
-}
-
 //Collection wraps *bongo.Connection.Collection()
 func (c BongoConnection) Collection(name string) Collection {
-	return &bongo.Collection{
-		Connection: c.Connection,
-		Name:       name,
+	return BongoCollection{
+		&bongo.Collection{
+			Connection: c.Connection,
+			Name:       name,
+		},
 	}
+}
+
+type BongoCollection struct {
+	*bongo.Collection
+}
+
+func (c BongoCollection) Find(query interface{}) ResultSet {
+	return c.Collection.Find(query)
+}
+
+type ResultSet interface {
+	Next(doc interface{}) bool
 }
 
 //Redirect represents a redirect object in our database

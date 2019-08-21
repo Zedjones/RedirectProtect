@@ -8,9 +8,17 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+var (
+	getConnection  = db.GetConnection
+	copy           = deepcopy.Copy
+	startTimeCheck = StartTimeCheck
+	parseDuration  = time.ParseDuration
+	sleep          = time.Sleep
+)
+
 func AddChecks() error {
 	var err error
-	connection, err := db.GetConnection()
+	connection, err := getConnection()
 	if err != nil {
 		return err
 	}
@@ -20,18 +28,18 @@ func AddChecks() error {
 	for allRedirs.Next(redir) {
 		//deepcopy our redirection
 		var redirCopy *db.Redirect
-		err := deepcopy.Copy(&redirCopy, &redir)
+		err := copy(&redirCopy, &redir)
 		if err != nil {
 			return err
 		}
-		go StartTimeCheck(redirCopy, collection)
+		go startTimeCheck(redirCopy, collection)
 	}
 	return err
 }
 
 func StartTimeCheck(redir *db.Redirect, collection db.Collection) error {
 	var err error
-	ttl, err := time.ParseDuration(redir.TTL)
+	ttl, err := parseDuration(redir.TTL)
 	if err != nil {
 		return err
 	}
@@ -40,7 +48,7 @@ func StartTimeCheck(redir *db.Redirect, collection db.Collection) error {
 	}
 	completedTime := redir.Created.Add(ttl)
 	timeLeft := completedTime.Sub(time.Now())
-	time.Sleep(timeLeft)
+	sleep(timeLeft)
 	err = collection.DeleteDocument(redir)
 	return err
 }

@@ -9,6 +9,7 @@ import (
 
 	bongo "github.com/go-bongo/bongo"
 	gomock "github.com/golang/mock/gomock"
+	db "github.com/zedjones/redirectprotect/db"
 )
 
 // MockCollection is a mock of Collection interface
@@ -49,10 +50,10 @@ func (mr *MockCollectionMockRecorder) DeleteDocument(arg0 interface{}) *gomock.C
 }
 
 // Find mocks base method
-func (m *MockCollection) Find(arg0 interface{}) *bongo.ResultSet {
+func (m *MockCollection) Find(arg0 interface{}) db.ResultSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Find", arg0)
-	ret0, _ := ret[0].(*bongo.ResultSet)
+	ret0, _ := ret[0].(db.ResultSet)
 	return ret0
 }
 
