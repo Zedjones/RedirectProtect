@@ -15,7 +15,7 @@ func TestAddChecks(t *testing.T) {
 	g := goblin.Goblin(t)
 	g.Describe("Add Checks", func() {
 		g.It("should fail when it cannot acquire a database connection", func() {
-			g.Assert(testDatabaseConnFail(t)).Equal(errors.New("some error"))
+			g.Assert(testDatabaseConnFail()).Equal(errors.New("some error"))
 		})
 		g.It("should fail when it cannot deepcopy a redirection", func() {
 			g.Assert(testDeepcopyFail(t, g)).Equal(errors.New("some error"))
@@ -26,7 +26,7 @@ func TestAddChecks(t *testing.T) {
 	})
 }
 
-func testDatabaseConnFail(t *testing.T) error {
+func testDatabaseConnFail() error {
 
 	oldGetConn := getConnection
 	defer func() { getConnection = oldGetConn }()

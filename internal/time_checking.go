@@ -14,6 +14,7 @@ var (
 	startTimeCheck = StartTimeCheck
 	parseDuration  = time.ParseDuration
 	sleep          = time.Sleep
+	now            = time.Now
 )
 
 func AddChecks() error {
@@ -47,8 +48,7 @@ func StartTimeCheck(redir *db.Redirect, collection db.Collection) error {
 		return err
 	}
 	completedTime := redir.Created.Add(ttl)
-	timeLeft := completedTime.Sub(time.Now())
+	timeLeft := completedTime.Sub(now())
 	sleep(timeLeft)
-	err = collection.DeleteDocument(redir)
-	return err
+	return collection.DeleteDocument(redir)
 }
