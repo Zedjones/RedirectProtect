@@ -17,6 +17,9 @@ var (
 	now            = time.Now
 )
 
+//AddChecks start a coroutine for each item in the database
+//to check if it has a timeout and delete the item after its
+//time is up
 func AddChecks() error {
 	var err error
 	connection, err := getConnection()
@@ -38,6 +41,8 @@ func AddChecks() error {
 	return err
 }
 
+//StartTimeCheck waits until the timeout for the provided db.Redirect
+//is done and then deletes the item from the database
 func StartTimeCheck(redir *db.Redirect, collection db.Collection) error {
 	var err error
 	ttl, err := parseDuration(redir.TTL)
