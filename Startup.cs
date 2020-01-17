@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
+using RedirectProtect.Database;
+using RedirectProtect.Services;
 
 namespace RedirectProtect
 {
@@ -23,6 +25,15 @@ namespace RedirectProtect
         {
 
             services.AddControllersWithViews();
+            
+            services.Configure<RedirectProtectConfig>(
+                Configuration.GetSection(nameof(RedirectProtectConfig))
+            );
+
+            services.AddSingleton<IRedirectProtectConfig>(sp => 
+                sp.GetRequiredService<IOptions<RedirectProtectConfig>>().Value);
+
+            services.AddSingleton<RedirectService>();
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -32,7 +43,7 @@ namespace RedirectProtect
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory logFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -67,7 +78,6 @@ namespace RedirectProtect
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
-            Utils.ApplicationLogging.LoggerFactory = logFactory;
         }
     }
 }

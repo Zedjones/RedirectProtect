@@ -13,7 +13,6 @@ namespace RedirectProtect
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine(Database.Config.Password);
             CreateHostBuilder(args).Build().Run();
         }
 
