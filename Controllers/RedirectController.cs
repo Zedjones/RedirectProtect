@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RedirectProtect.Services;
 using RedirectProtect.Database.Models;
+using System.Collections.Generic;
 
 namespace RedirectProtect.Controllers
 {
@@ -14,6 +15,9 @@ namespace RedirectProtect.Controllers
         {
             _redirectService = redirectService;
         }
+
+        [HttpGet]
+        public ActionResult<List<Redirect>> GetAction() => _redirectService.GetRedirects();
 
         [HttpGet("{id:length(24)}", Name = "GetRedirect")]
         public ActionResult<Redirect> GetAction(string id)
