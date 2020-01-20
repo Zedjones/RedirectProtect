@@ -58,7 +58,6 @@ namespace RedirectProtect.Services
             {
                 TTL = redirect.TTL,
                 Password = hashedPass,
-                CreatedOn = DateTime.Now,
                 URL = redirect.URL,
                 Path = path
             });
