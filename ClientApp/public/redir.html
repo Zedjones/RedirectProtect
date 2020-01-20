@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Redirect Protect</title>
+</head>
+
+<body>
+
+</body>
+
+</html>
+
+<script>
+  var passphrase = prompt("Please enter the passphrase: ")
+  var path = window.location.pathname.split('/')[1]
+  var postURL = `/check_pass?passphrase=${passphrase}&path=${path}`
+  fetch(postURL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=UTF-8'
+    },
+  })
+    .then(response => {
+      if (response.status === 200) {
+        response.json().then(data => {
+          window.location.replace(data["url"])
+        })
+      }
+      else {
+        alert("Password incorrect, try again.");
+      }
+    })
+    .catch(((_) => {
+      alert("Failed to send request, please check your connection.");
+    }))
+</script>
