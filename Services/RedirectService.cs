@@ -3,7 +3,7 @@ using RedirectProtect.Database;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using RedirectProtect.Database.Models;
-using Microsoft.Extensions.Hosting;
+using System;
 
 namespace RedirectProtect.Services
 {
@@ -18,12 +18,12 @@ namespace RedirectProtect.Services
                 logger.LogCritical("Missing collection name in configuration");
                 somethingMissing = true;
             }
-            else if(settings.ConnectionString is null)
+            else if (settings.ConnectionString is null)
             {
                 logger.LogCritical("Missing connection string in configuration");
                 somethingMissing = true;
             }
-            else if(settings.DatabaseName is null)
+            else if (settings.DatabaseName is null)
             {
                 logger.LogCritical("Missing database name in configuration");
                 somethingMissing = true;
@@ -42,17 +42,15 @@ namespace RedirectProtect.Services
         public List<Redirect> GetRedirects() =>
             _redirects.Find(_ => true).ToList();
 
-        public Redirect GetRedirect(string id) =>
-            _redirects.Find<Redirect>(redirect => redirect.Id == id).FirstOrDefault();
-
-        public void Create(Redirect redirect) =>
-            _redirects.InsertOne(redirect);
-
-        public void Remove(Redirect redirect) =>
-            _redirects.DeleteOne(redir => redir.Id == redirect.Id);
-
-        public void Remove(string id) =>
-            _redirects.DeleteOne(redirect => redirect.Id == id);
-
+        public void Create(RedirectDto redirect)
+        {
+            _redirects.InsertOne(new Redirect
+            {
+                TTL = redirect.TTL,
+                Password = redirect.Password,
+                CreatedOn = DateTime.Now,
+                URL = redirect.URL
+            });
+        }
     }
 }

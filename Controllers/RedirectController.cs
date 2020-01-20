@@ -19,25 +19,12 @@ namespace RedirectProtect.Controllers
         [HttpGet]
         public ActionResult<List<Redirect>> GetAction() => _redirectService.GetRedirects();
 
-        [HttpGet("{id:length(24)}", Name = "GetRedirect")]
-        public ActionResult<Redirect> GetAction(string id)
-        {
-            var redirect = _redirectService.GetRedirect(id);
-
-            if (redirect is null)
-            {
-                return NotFound();
-            }
-
-            return redirect;
-        }
-
         [HttpPost]
-        public ActionResult<Redirect> Create(Redirect redirect)
+        public ActionResult<Redirect> Create(RedirectDto redirect)
         {
             _redirectService.Create(redirect);
 
-            return CreatedAtRoute("GetBook", new { id = redirect.Id });
+            return Ok();
         }
     }
 }
