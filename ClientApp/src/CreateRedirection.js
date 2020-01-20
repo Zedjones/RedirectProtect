@@ -65,17 +65,26 @@ function SignIn() {
     if (durationEnabled && selectedDate.c != null) {
       ttl = `${selectedDate.c.hour}h${selectedDate.c.minute}m`
     }
-    let queryParams = `?url=${URL}&passphrase=${passphrase}&ttl=${ttl}`
-    let postUrl = `http://localhost:1234/add_redirect${queryParams}`;
+    let redirect = {
+      "URL": URL,
+      "Password": passphrase,
+      "TTL": selectedDate.toISO()
+    }
 
     setLoading(true);
-    fetch(postUrl, {
+    fetch('api/redirect', {
       method: 'POST',
+      body: JSON.stringify(redirect),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
     })
       .then(response => {
         if (response.status === 200) {
         }
         else {
+          response.json().then(json => console.log(json));
         }
         setLoading(false);
       })
