@@ -39,17 +39,25 @@ namespace RedirectProtect.Services
 
             _redirects = database.GetCollection<Redirect>(settings.CollectionName);
         }
+        private bool PathExists(string path) =>
+            _redirects.Find(redirect => redirect.Path == path).CountDocuments() == 1;
         public List<Redirect> GetRedirects() =>
             _redirects.Find(_ => true).ToList();
 
         public void Create(RedirectDto redirect)
         {
+            var path = Utils.RandomHex.GetRandomHexNumber(8).ToLower();
+            while (PathExists(path))
+            {
+                path = Utils.RandomHex.GetRandomHexNumber(8).ToLower();
+            }
             _redirects.InsertOne(new Redirect
             {
                 TTL = redirect.TTL,
                 Password = redirect.Password,
                 CreatedOn = DateTime.Now,
-                URL = redirect.URL
+                URL = redirect.URL,
+                Path = path
             });
         }
     }
