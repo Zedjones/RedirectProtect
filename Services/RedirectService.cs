@@ -46,15 +46,18 @@ namespace RedirectProtect.Services
 
         public void Create(RedirectDto redirect)
         {
-            var path = Utils.RandomHex.GetRandomHexNumber(8).ToLower();
-            while (PathExists(path))
-            {
+            String path;
+            do {
                 path = Utils.RandomHex.GetRandomHexNumber(8).ToLower();
             }
+            while (PathExists(path));
+
+            var hashedPass = BCrypt.Net.BCrypt.HashPassword(redirect.Password);
+
             _redirects.InsertOne(new Redirect
             {
                 TTL = redirect.TTL,
-                Password = redirect.Password,
+                Password = hashedPass,
                 CreatedOn = DateTime.Now,
                 URL = redirect.URL,
                 Path = path
