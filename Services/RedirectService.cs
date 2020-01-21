@@ -44,6 +44,10 @@ namespace RedirectProtect.Services
         }
         private bool PathExists(string path) =>
             _redirects.Find(redirect => redirect.Path == path).CountDocuments() == 1;
+
+        public Redirect GetRedirect(string path) =>
+            _redirects.Find(redirect => redirect.Path == path).FirstOrDefault();
+            
         public List<Redirect> GetRedirects() =>
             _redirects.Find(_ => true).ToList();
 
