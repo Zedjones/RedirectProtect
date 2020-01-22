@@ -14,7 +14,7 @@
 <script>
   var passphrase = prompt("Please enter the passphrase: ")
   var path = window.location.pathname.split('/')[1]
-  var postURL = `/check_pass?passphrase=${passphrase}&path=${path}`
+  var postURL = `/${path}?pass=${passphrase}`
   fetch(postURL, {
     method: 'POST',
     headers: {
@@ -23,8 +23,8 @@
   })
     .then(response => {
       if (response.status === 200) {
-        response.json().then(data => {
-          window.location.replace(data["url"])
+        response.text().then(text => {
+          window.location.replace(text)
         })
       }
       else {

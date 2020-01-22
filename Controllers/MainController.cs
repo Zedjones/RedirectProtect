@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Razor;
 using RedirectProtect.Services;
 
 namespace RedirectProtect.Controllers
 {
     [ApiController]
     [Route("/")]
-    public class MainController : ControllerBase
+    public class MainController : Controller
     {
         private readonly RedirectService _redirectService;
         public MainController(RedirectService redirectService)
@@ -22,7 +23,7 @@ namespace RedirectProtect.Controllers
                 return NotFound();
             }
 
-            return Ok(redirect.Path);
+            return View("Redir");
         }
         [HttpPost("{path:length(8)}", Name = "GetRedirect")]
         public IActionResult PostRedirect(string path, [FromQuery(Name = "pass")] string password)
