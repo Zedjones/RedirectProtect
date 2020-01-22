@@ -24,5 +24,24 @@ namespace RedirectProtect.Controllers
 
             return Ok(redirect.Path);
         }
+        [HttpPost("{path:length(8)}", Name = "GetRedirect")]
+        public IActionResult PostRedirect(string path, [FromQuery(Name = "pass")] string password)
+        {
+            var redirect = _redirectService.GetRedirect(path);
+
+            if (redirect is null)
+            {
+                return NotFound();
+            }
+
+            if (BCrypt.Net.BCrypt.Verify(password, redirect.Password))
+            {
+                return Ok(redirect.URL);
+            }
+            else
+            {
+                return Unauthorized("Incorrect password provided");
+            }
+        }
     }
 }
