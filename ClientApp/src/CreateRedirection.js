@@ -184,22 +184,6 @@ function SignIn() {
         >
           <CircularProgress />
         </Fade>
-        <List className={classes.list}>
-            <ListItem>
-              <Grid container direction="row" spacing={2}>
-                <Grid item>
-                  <ListItemText
-                    primary="Single-line item"
-                  />
-                </Grid>
-                <Grid item>
-                  <ListItemText
-                    primary="Single-line item"
-                  />
-                </Grid>
-              </Grid>
-            </ListItem>
-        </List>
       </Grid>
     </Container >
   );
