@@ -13,12 +13,13 @@ namespace RedirectProtect.Services
     {
         private readonly ILogger<DeletionService> _logger;
         private readonly RedirectService _redirectService;
-        private List<Timer> _timers;
+        private List<Task> _timerTasks;
+        private Task _waitTask;
         public DeletionService(ILogger<DeletionService> logger, RedirectService redirectService)
         {
             _logger = logger;
             _redirectService = redirectService;
-            _timers = new List<Timer>();
+            _timerTasks = new List<Task>();
         }
         public Task StartAsync(CancellationToken stopToken)
         {
@@ -32,25 +33,19 @@ namespace RedirectProtect.Services
                 }
                 else
                 {
-                    _timers.Add(new Timer(
-                        (state) => {
-                            _redirectService.DeleteRedirect(redir.Path);
-                            _logger.LogInformation("Deleted {0}", redir.Path);
-                        }
-                    ));
                 }
             }
-            return Task.CompletedTask;
+            return Task.WhenAll(_timerTasks);
         }
         public Task StopAsync(CancellationToken stopToken)
         {
-            _timers.ForEach(timer => timer.Change(Timeout.Infinite, 0));
-
+            //TODO: Do something with cancellation token to correctly stop tasks
             return Task.CompletedTask;
         }
         public void Dispose()
         {
-            _timers.ForEach(timer => timer.Dispose());
+            _timerTasks.ForEach(task => task.Dispose());
+            _waitTask.Dispose();
         }
     }
 }
