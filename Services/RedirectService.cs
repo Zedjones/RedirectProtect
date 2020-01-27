@@ -47,23 +47,38 @@ namespace RedirectProtect.Services
 
         public Redirect GetRedirect(string path) =>
             _redirects.Find(redirect => redirect.Path == path).FirstOrDefault();
-            
+
+        public IMongoCollection<Redirect> GetRedirectCollection() => _redirects;
+
         public List<Redirect> GetRedirects() =>
             _redirects.Find(_ => true).ToList();
+
+        public void DeleteRedirect(string path) =>
+            _redirects.DeleteOne(redirect => redirect.Path == path);
 
         public void Create(RedirectDto redirect)
         {
             String path;
-            do {
+            do
+            {
                 path = Utils.RandomHex.GetRandomHexNumber(8).ToLower();
             }
             while (PathExists(path));
 
             var hashedPass = BCrypt.Net.BCrypt.HashPassword(redirect.Password);
+            DateTime? fullTime;
+            if (redirect.TTL is null)
+            {
+                fullTime = null;
+            }
+            else
+            {
+                fullTime = DateTime.UtcNow.AddHours(redirect.TTL.Value.Hour).AddMinutes(redirect.TTL.Value.Minute);
+            }
 
             var newRedir = new Redirect
             {
-                TTL = redirect.TTL,
+                ExpirationTime = fullTime,
                 Password = hashedPass,
                 URL = redirect.URL,
                 Path = path

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace RedirectProtect
@@ -15,6 +16,9 @@ namespace RedirectProtect
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                })
+                .ConfigureServices(services => {
+                    services.AddHostedService<Services.DeletionService>();
                 });
     }
 }

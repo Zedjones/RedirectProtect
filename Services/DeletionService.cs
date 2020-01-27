@@ -5,6 +5,8 @@ using System.Threading;
 using System.Collections.Generic;
 using System;
 
+using MongoDB.Driver;
+
 namespace RedirectProtect.Services
 {
     public class DeletionService : IHostedService, IDisposable
@@ -16,9 +18,28 @@ namespace RedirectProtect.Services
         {
             _logger = logger;
             _redirectService = redirectService;
+            _timers = new List<Timer>();
         }
         public Task StartAsync(CancellationToken stopToken)
         {
+            var redirs = _redirectService.GetRedirects();
+            foreach (var redir in redirs)
+            {
+                if (redir.ExpirationTime < DateTime.UtcNow)
+                {
+                    _logger.LogInformation("Deleted {0}", redir.Path);
+                    _redirectService.DeleteRedirect(redir.Path);
+                }
+                else
+                {
+                    _timers.Add(new Timer(
+                        (state) => {
+                            _redirectService.DeleteRedirect(redir.Path);
+                            _logger.LogInformation("Deleted {0}", redir.Path);
+                        }
+                    ));
+                }
+            }
             return Task.CompletedTask;
         }
         public Task StopAsync(CancellationToken stopToken)

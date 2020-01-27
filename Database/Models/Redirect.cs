@@ -10,6 +10,6 @@ namespace RedirectProtect.Database.Models
         public string Path { get; set; }
         public string URL { get; set; }
         public string Password { get; set; }
-        public DateTime TTL { get; set; }
+        public DateTime? ExpirationTime { get; set; }
     }
 }
