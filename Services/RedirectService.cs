@@ -56,6 +56,9 @@ namespace RedirectProtect.Services
         public void DeleteRedirect(string path) =>
             _redirects.DeleteOne(redirect => redirect.Path == path);
 
+        public void DeleteRedirect(Redirect redirIn) =>
+            _redirects.DeleteOne(redir => redir.Path == redirIn.Path);
+
         public void Create(RedirectDto redirect)
         {
             String path;

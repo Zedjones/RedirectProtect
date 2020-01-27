@@ -14,7 +14,8 @@ namespace RedirectProtect.Services
         private readonly ILogger<DeletionService> _logger;
         private readonly RedirectService _redirectService;
         private List<Task> _timerTasks;
-        private Task _waitTask;
+        private Dictionary<string, CancellationToken> _taskMap;
+        private Task _watchTask;
         public DeletionService(ILogger<DeletionService> logger, RedirectService redirectService)
         {
             _logger = logger;
@@ -28,24 +29,49 @@ namespace RedirectProtect.Services
             {
                 if (redir.ExpirationTime < DateTime.UtcNow)
                 {
+                    _redirectService.DeleteRedirect(redir);
                     _logger.LogInformation("Deleted {0}", redir.Path);
-                    _redirectService.DeleteRedirect(redir.Path);
                 }
                 else
                 {
                 }
             }
-            return Task.WhenAll(_timerTasks);
+            _watchTask = WatchCollection();
+            return _watchTask;
         }
         public Task StopAsync(CancellationToken stopToken)
         {
             //TODO: Do something with cancellation token to correctly stop tasks
             return Task.CompletedTask;
         }
+        public async Task HandleRedirect(Database.Models.Redirect redir, CancellationToken stopToken)
+        {
+            var timeToWait = DateTime.UtcNow - redir.ExpirationTime;
+            await Task.Delay(timeToWait.Value.Milliseconds, stopToken);
+            _redirectService.DeleteRedirect(redir);
+            _logger.LogInformation("Deleted {0}", redir.Path);
+        }
+        public async Task WatchCollection(CancellationToken token = default)
+        {
+            using (var cursor = await _redirectService.GetRedirectCollection().WatchAsync(cancellationToken: token))
+            {
+                await cursor.ForEachAsync(change =>
+                {
+                    if (change.OperationType == ChangeStreamOperationType.Insert)
+                    {
+                        
+                    }
+                    else if (change.OperationType == ChangeStreamOperationType.Delete)
+                    {
+
+                    }
+                }, cancellationToken: token);
+            }
+        }
         public void Dispose()
         {
             _timerTasks.ForEach(task => task.Dispose());
-            _waitTask.Dispose();
+            _watchTask.Dispose();
         }
     }
 }
