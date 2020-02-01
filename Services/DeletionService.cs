@@ -14,7 +14,7 @@ namespace RedirectProtect.Services
         private readonly ILogger<DeletionService> _logger;
         private readonly RedirectService _redirectService;
         private List<Task> _timerTasks;
-        private Dictionary<string, CancellationToken> _taskMap;
+        private Dictionary<string, (CancellationTokenSource, Task)> _taskMap;
         private Task _watchTask;
         public DeletionService(ILogger<DeletionService> logger, RedirectService redirectService)
         {
@@ -34,9 +34,12 @@ namespace RedirectProtect.Services
                 }
                 else
                 {
+                    var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(stopToken);
+                    var redirTask = HandleRedirect(redir, tokenSource.Token);
+                    _taskMap[redir.Path] = (tokenSource, redirTask);
                 }
             }
-            _watchTask = WatchCollection();
+            _watchTask = WatchCollection(stopToken);
             return _watchTask;
         }
         public Task StopAsync(CancellationToken stopToken)
@@ -48,8 +51,10 @@ namespace RedirectProtect.Services
         {
             var timeToWait = DateTime.UtcNow - redir.ExpirationTime;
             await Task.Delay(timeToWait.Value.Milliseconds, stopToken);
+            // Don't delete redirect if delay task was cancelled
+            if (stopToken.IsCancellationRequested) return;
             _redirectService.DeleteRedirect(redir);
-            _logger.LogInformation("Deleted {0}", redir.Path);
+            _logger.LogInformation($"Deleted {redir.Path}");
         }
         public async Task WatchCollection(CancellationToken token = default)
         {
@@ -59,7 +64,7 @@ namespace RedirectProtect.Services
                 {
                     if (change.OperationType == ChangeStreamOperationType.Insert)
                     {
-                        
+
                     }
                     else if (change.OperationType == ChangeStreamOperationType.Delete)
                     {
