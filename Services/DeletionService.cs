@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
@@ -37,6 +39,7 @@ namespace RedirectProtect.Services
                     var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(stopToken);
                     var redirTask = HandleRedirect(redir, tokenSource.Token);
                     _taskMap[redir.Path] = (tokenSource, redirTask);
+                    _logger.LogInformation($"Created redirect handler for {redir.Path}")
                 }
             }
             _watchTask = WatchCollection(stopToken);
@@ -44,8 +47,10 @@ namespace RedirectProtect.Services
         }
         public Task StopAsync(CancellationToken stopToken)
         {
-            //TODO: Do something with cancellation token to correctly stop tasks
-            return Task.CompletedTask;
+            //TODO: Check if this works
+            var deleteTasks = _taskMap.Values.Select(tuple => tuple.Item2);
+            deleteTasks.Append(_watchTask);
+            return Task.WhenAll(deleteTasks);
         }
         public async Task HandleRedirect(Database.Models.Redirect redir, CancellationToken stopToken)
         {
@@ -64,11 +69,19 @@ namespace RedirectProtect.Services
                 {
                     if (change.OperationType == ChangeStreamOperationType.Insert)
                     {
-
+                        var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+                        var redirTask = HandleRedirect(change.FullDocument, tokenSource.Token);
+                        _taskMap[change.FullDocument.Path] = (tokenSource, redirTask);
+                        _logger.LogInformation($"Created redirect handler for {change.FullDocument.Path}")
                     }
                     else if (change.OperationType == ChangeStreamOperationType.Delete)
                     {
-
+                        var (cancelSource, task) = _taskMap[change.FullDocument.Path];
+                        if (!task.IsCompleted) 
+                        {
+                            _logger.LogInformation($"Cancelling {change.FullDocument.Path}");
+                            cancelSource.Cancel();
+                        }
                     }
                 }, cancellationToken: token);
             }
