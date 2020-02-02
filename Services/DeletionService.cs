@@ -23,6 +23,7 @@ namespace RedirectProtect.Services
             _logger = logger;
             _redirectService = redirectService;
             _timerTasks = new List<Task>();
+            _taskMap = new Dictionary<string, (CancellationTokenSource, Task)>();
         }
         public Task StartAsync(CancellationToken stopToken)
         {
@@ -39,7 +40,7 @@ namespace RedirectProtect.Services
                     var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(stopToken);
                     var redirTask = HandleRedirect(redir, tokenSource.Token);
                     _taskMap[redir.Path] = (tokenSource, redirTask);
-                    _logger.LogInformation($"Created redirect handler for {redir.Path}")
+                    _logger.LogInformation($"Created redirect handler for {redir.Path}");
                 }
             }
             _watchTask = WatchCollection(stopToken);
@@ -72,7 +73,7 @@ namespace RedirectProtect.Services
                         var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
                         var redirTask = HandleRedirect(change.FullDocument, tokenSource.Token);
                         _taskMap[change.FullDocument.Path] = (tokenSource, redirTask);
-                        _logger.LogInformation($"Created redirect handler for {change.FullDocument.Path}")
+                        _logger.LogInformation($"Created redirect handler for {change.FullDocument.Path}");
                     }
                     else if (change.OperationType == ChangeStreamOperationType.Delete)
                     {
