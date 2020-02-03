@@ -7,8 +7,8 @@ networks:
         - subnet: 172.20.0.1/24
 services:
   mongo:
-    image: mongo
+    image: mongo:latest
     container_name: mongo
     env_file:
       - ".env"
-    entrypoint: mongod --replSet rs0 --bind_ip_all
+    command: mongod --replSet rs0 --bind_ip_all
