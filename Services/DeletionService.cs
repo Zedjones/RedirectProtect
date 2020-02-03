@@ -53,13 +53,14 @@ namespace RedirectProtect.Services
         public Task StopAsync(CancellationToken stopToken)
         {
             //TODO: Check if this works
+            _logger.LogInformation("Stopping deletion service");
             var deleteTasks = _taskMap.Values.Select(tuple => tuple.Item2);
-            deleteTasks.Append(_watchTask);
+            deleteTasks.Append(_waitTask);
             return Task.WhenAll(deleteTasks);
         }
         public async Task HandleRedirect(Database.Models.Redirect redir, CancellationToken stopToken)
         {
-            var timeToWait = DateTime.UtcNow - redir.ExpirationTime;
+            var timeToWait = redir.ExpirationTime - DateTime.UtcNow;
             await Task.Delay(timeToWait.Value.Milliseconds, stopToken);
             // Don't delete redirect if delay task was cancelled
             if (stopToken.IsCancellationRequested) return;
@@ -68,6 +69,7 @@ namespace RedirectProtect.Services
         }
         public void Dispose()
         {
+            _logger.LogInformation("Disposing of tasks");
             _taskList.ForEach(task => task.Dispose());
             _waitTask.Dispose();
         }

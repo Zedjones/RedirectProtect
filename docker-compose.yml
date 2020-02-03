@@ -11,4 +11,3 @@ services:
     container_name: mongo
     env_file:
       - ".env"
-    command: mongod --replSet rs0 --bind_ip_all
