@@ -75,10 +75,18 @@ namespace RedirectProtect.Services
                     {
                         if (!(change.FullDocument.ExpirationTime is null))
                         {
-                            var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-                            var redirTask = HandleRedirect(change.FullDocument, tokenSource.Token);
-                            _taskMap[change.FullDocument.Path] = (tokenSource, redirTask);
-                            _logger.LogInformation($"Created redirect handler for {change.FullDocument.Path}");
+                            if (change.FullDocument.ExpirationTime < DateTime.UtcNow)
+                            {
+                                _redirectService.DeleteRedirect(change.FullDocument);
+                                _logger.LogInformation("Deleted {0}", change.FullDocument.Path);
+                            }
+                            else
+                            {
+                                var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+                                var redirTask = HandleRedirect(change.FullDocument, tokenSource.Token);
+                                _taskMap[change.FullDocument.Path] = (tokenSource, redirTask);
+                                _logger.LogInformation($"Created redirect handler for {change.FullDocument.Path}");
+                            }
                         }
                     }
                     else if (change.OperationType == ChangeStreamOperationType.Delete)
