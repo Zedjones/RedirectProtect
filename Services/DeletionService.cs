@@ -68,8 +68,8 @@ namespace RedirectProtect.Services
         }
         public void Dispose()
         {
-            _timerTasks.ForEach(task => task.Dispose());
-            _watchTask.Dispose();
+            _taskList.ForEach(task => task.Dispose());
+            _waitTask.Dispose();
         }
     }
 }
