@@ -61,14 +61,14 @@ function SignIn() {
 
   function createShortened(ev) {
     ev.preventDefault();
-    let ttl = "";
+    let ttl = null;
     if (durationEnabled && selectedDate.c != null) {
-      ttl = `${selectedDate.c.hour}h${selectedDate.c.minute}m`
+      ttl = selectedDate.toISO()
     }
     let redirect = {
       "URL": URL,
       "Password": passphrase,
-      "TTL": selectedDate.toISO()
+      "TTL": ttl
     }
 
     setLoading(true);

@@ -30,17 +30,20 @@ namespace RedirectProtect.Services
             var redirs = _redirectService.GetRedirects();
             foreach (var redir in redirs)
             {
-                if (redir.ExpirationTime < DateTime.UtcNow)
+                if (!(redir.ExpirationTime is null))
                 {
-                    _redirectService.DeleteRedirect(redir);
-                    _logger.LogInformation("Deleted {0}", redir.Path);
-                }
-                else
-                {
-                    var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(stopToken);
-                    var redirTask = HandleRedirect(redir, tokenSource.Token);
-                    _taskMap[redir.Path] = (tokenSource, redirTask);
-                    _logger.LogInformation($"Created redirect handler for {redir.Path}");
+                    if (redir.ExpirationTime < DateTime.UtcNow)
+                    {
+                        _redirectService.DeleteRedirect(redir);
+                        _logger.LogInformation("Deleted {0}", redir.Path);
+                    }
+                    else
+                    {
+                        var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(stopToken);
+                        var redirTask = HandleRedirect(redir, tokenSource.Token);
+                        _taskMap[redir.Path] = (tokenSource, redirTask);
+                        _logger.LogInformation($"Created redirect handler for {redir.Path}");
+                    }
                 }
             }
             _watchTask = WatchCollection(stopToken);
@@ -70,18 +73,25 @@ namespace RedirectProtect.Services
                 {
                     if (change.OperationType == ChangeStreamOperationType.Insert)
                     {
-                        var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-                        var redirTask = HandleRedirect(change.FullDocument, tokenSource.Token);
-                        _taskMap[change.FullDocument.Path] = (tokenSource, redirTask);
-                        _logger.LogInformation($"Created redirect handler for {change.FullDocument.Path}");
+                        if (!(change.FullDocument.ExpirationTime is null))
+                        {
+                            var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+                            var redirTask = HandleRedirect(change.FullDocument, tokenSource.Token);
+                            _taskMap[change.FullDocument.Path] = (tokenSource, redirTask);
+                            _logger.LogInformation($"Created redirect handler for {change.FullDocument.Path}");
+                        }
                     }
                     else if (change.OperationType == ChangeStreamOperationType.Delete)
                     {
-                        var (cancelSource, task) = _taskMap[change.FullDocument.Path];
-                        if (!task.IsCompleted) 
+                        //TODO: Take into account that we can't get full document from delete
+                        if (!(change.FullDocument.ExpirationTime is null))
                         {
-                            _logger.LogInformation($"Cancelling {change.FullDocument.Path}");
-                            cancelSource.Cancel();
+                            var (cancelSource, task) = _taskMap[change.FullDocument.Path];
+                            if (!task.IsCompleted)
+                            {
+                                _logger.LogInformation($"Cancelling {change.FullDocument.Path}");
+                                cancelSource.Cancel();
+                            }
                         }
                     }
                 }, cancellationToken: token);
