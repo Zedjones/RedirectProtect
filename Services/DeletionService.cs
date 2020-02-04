@@ -18,6 +18,7 @@ namespace RedirectProtect.Services
         private Dictionary<string, (CancellationTokenSource, Task)> _taskMap;
         private List<Task> _taskList;
         private Task _waitTask;
+        private CancellationToken mainToken;
         public DeletionService(ILogger<DeletionService> logger, RedirectService redirectService)
         {
             _logger = logger;
@@ -28,24 +29,10 @@ namespace RedirectProtect.Services
         public Task StartAsync(CancellationToken stopToken)
         {
             var redirs = _redirectService.GetRedirects();
+            mainToken = stopToken;
             foreach (var redir in redirs)
             {
-                if (!(redir.ExpirationTime is null))
-                {
-                    if (redir.ExpirationTime < DateTime.UtcNow)
-                    {
-                        _redirectService.DeleteRedirect(redir);
-                        _logger.LogInformation("Deleted {0}", redir.Path);
-                    }
-                    else
-                    {
-                        var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(stopToken);
-                        var redirTask = HandleRedirect(redir, tokenSource.Token);
-                        _taskMap[redir.Path] = (tokenSource, redirTask);
-                        _logger.LogInformation($"Created redirect handler for {redir.Path}");
-                        _taskList.Add(redirTask);
-                    }
-                }
+                ProcessRedirect(redir);
             }
             _waitTask = Task.WhenAll(_taskList);
             return _waitTask;
@@ -62,10 +49,29 @@ namespace RedirectProtect.Services
         {
             var timeToWait = redir.ExpirationTime - DateTime.UtcNow;
             await Task.Delay(timeToWait.Value.Milliseconds, stopToken);
-            // Don't delete redirect if delay task was cancelled
-            if (stopToken.IsCancellationRequested) return;
+            // Don't delete redirect if delay task was cancelled or if it was manually deleted
+            if (stopToken.IsCancellationRequested || _redirectService.RedirectExists(redir)) return;
             _redirectService.DeleteRedirect(redir);
             _logger.LogInformation($"Deleted {redir.Path}");
+        }
+        public void ProcessRedirect(Database.Models.Redirect redir)
+        {
+            if (!(redir.ExpirationTime is null))
+            {
+                if (redir.ExpirationTime < DateTime.UtcNow)
+                {
+                    _redirectService.DeleteRedirect(redir);
+                    _logger.LogInformation("Deleted {0}", redir.Path);
+                }
+                else
+                {
+                    var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(mainToken);
+                    var redirTask = HandleRedirect(redir, tokenSource.Token);
+                    _taskMap[redir.Path] = (tokenSource, redirTask);
+                    _logger.LogInformation($"Created redirect handler for {redir.Path}");
+                    _taskList.Add(redirTask);
+                }
+            }
         }
         public void Dispose()
         {

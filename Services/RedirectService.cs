@@ -45,6 +45,9 @@ namespace RedirectProtect.Services
         private bool PathExists(string path) =>
             _redirects.Find(redirect => redirect.Path == path).CountDocuments() == 1;
 
+        public bool RedirectExists(Redirect redir) => 
+            _redirects.Find(redirect => redirect.Id == redir.Id && redirect.Path == redir.Path).CountDocuments() == 1;
+
         public Redirect GetRedirect(string path) =>
             _redirects.Find(redirect => redirect.Path == path).FirstOrDefault();
 
@@ -59,7 +62,7 @@ namespace RedirectProtect.Services
         public void DeleteRedirect(Redirect redirIn) =>
             _redirects.DeleteOne(redir => redir.Path == redirIn.Path);
 
-        public void Create(RedirectDto redirect)
+        public Redirect Create(RedirectDto redirect)
         {
             String path;
             do
@@ -88,6 +91,7 @@ namespace RedirectProtect.Services
             };
             _redirects.InsertOne(newRedir);
             _logger.LogInformation($"Inserted redirect: {JsonConvert.SerializeObject(newRedir)}");
+            return newRedir;
         }
     }
 }

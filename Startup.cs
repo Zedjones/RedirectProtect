@@ -40,6 +40,8 @@ namespace RedirectProtect
             {
                 configuration.RootPath = "ClientApp/build";
             });
+
+            services.AddHostedService<Services.DeletionService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

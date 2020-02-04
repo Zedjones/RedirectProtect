@@ -16,9 +16,6 @@ namespace RedirectProtect
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                })
-                .ConfigureServices(services => {
-                    services.AddHostedService<Services.DeletionService>();
                 });
     }
 }
