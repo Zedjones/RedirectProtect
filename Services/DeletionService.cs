@@ -48,9 +48,9 @@ namespace RedirectProtect.Services
         public async Task HandleRedirect(Database.Models.Redirect redir, CancellationToken stopToken)
         {
             var timeToWait = redir.ExpirationTime - DateTime.UtcNow;
-            await Task.Delay(timeToWait.Value.Milliseconds, stopToken);
+            await Task.Delay(timeToWait.Value, stopToken);
             // Don't delete redirect if delay task was cancelled or if it was manually deleted
-            if (stopToken.IsCancellationRequested || _redirectService.RedirectExists(redir)) return;
+            if (stopToken.IsCancellationRequested || !(_redirectService.RedirectExists(redir))) return;
             _redirectService.DeleteRedirect(redir);
             _logger.LogInformation($"Deleted {redir.Path}");
         }
