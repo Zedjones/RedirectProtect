@@ -16,7 +16,8 @@ import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import LuxonUtils from "@date-io/luxon"
 import { DateTime } from "luxon"
 import AccessTimeIcon from "@material-ui/icons/AccessTime"
-import { Grid, List, ListItem, ListItemText } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
+import CreateToast from './CreateToast';
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -58,6 +59,8 @@ function SignIn() {
   const [URL, setURL] = useState('');
   const [loading, setLoading] = React.useState(false);
   const [passphrase, setPassphrase] = useState('');
+  const [toastOpen, setToastOpen] = useState(false);
+  const [lastPath, setLastPath] = useState('');
 
   function createShortened(ev) {
     ev.preventDefault();
@@ -81,12 +84,16 @@ function SignIn() {
       }
     })
       .then(response => {
+        setLoading(false);
         if (response.status === 200) {
+          response.text().then(text => {
+            setLastPath(text);
+            setToastOpen(true);
+          });
         }
         else {
           response.json().then(json => console.log(json));
         }
-        setLoading(false);
       })
       .catch(((_) => {
         setLoading(false);
@@ -164,6 +171,7 @@ function SignIn() {
               </MuiPickersUtilsProvider>
             </Grid>
           </Grid>
+          <CreateToast open={toastOpen} setOpen={setToastOpen} path={lastPath}></CreateToast>
           <Button
             type="submit"
             fullWidth

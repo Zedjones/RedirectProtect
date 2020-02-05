@@ -36,6 +36,7 @@ namespace RedirectProtect.Controllers
             {
                 var newRedir = _redirectService.Create(redirect);
                 _deletionService.ProcessRedirect(newRedir);
+                return Ok(newRedir.Path);
             }
             catch (System.TimeoutException te)
             {
@@ -44,7 +45,6 @@ namespace RedirectProtect.Controllers
                                statusCode: (int)HttpStatusCode.InternalServerError);
             }
 
-            return Ok();
         }
     }
 }
