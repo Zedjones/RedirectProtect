@@ -8,6 +8,7 @@ import { Grid } from '@material-ui/core';
 
 import RedirectionFormText from './RedirectionFormText';
 import RedirectionFormTime from './RedirectionFormTime';
+import CreateToast from '../CreateToast';
 
 const useStyles = makeStyles(theme => ({
     form: {
@@ -30,6 +31,8 @@ export default function RedirectionForm(props) {
     const [durationEnabled, handleDurationEnableChange] = useState(false);
     const [loading, setLoading] = useState(false);
     const [selectedDate, handleDateChange] = useState(new DateTime.fromObject({ hours: 0, minutes: 0 }));
+    const [toastOpen, setToastOpen] = useState(false);
+    const [lastPath, setLastPath] = useState('');
 
     function createShortened(ev) {
         ev.preventDefault();
@@ -57,6 +60,8 @@ export default function RedirectionForm(props) {
                 if (response.status === 200) {
                     response.text().then(text => {
                         //TODO: update this for our new enqueueSnackbar approach
+                        setLastPath(text);
+                        setToastOpen(true);
                     });
                 }
                 else {
@@ -79,6 +84,7 @@ export default function RedirectionForm(props) {
                     selectedDate={selectedDate}
                     handleDateChange={handleDateChange}
                 />
+                <CreateToast open={toastOpen} setOpen={setToastOpen} path={lastPath}></CreateToast>
                 <Button
                     type="submit"
                     fullWidth
@@ -88,7 +94,7 @@ export default function RedirectionForm(props) {
                     disabled={loading}
                 >
                     Encrypt
-            </Button>
+                </Button>
             </form>
             <Fade
                 in={loading}

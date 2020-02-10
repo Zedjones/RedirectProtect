@@ -1,4 +1,4 @@
-import { SnackbarProvider } from "notistack";
+import { SnackbarProvider, withSnackbar } from "notistack";
 import React from 'react';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
@@ -9,25 +9,22 @@ function Alert(props) {
     return <MuiAlert elevation={0} variant="filled" {...props} />
 }
 
-export default function CreateToast(props) {
+function CreateToast(props) {
     const [open, setOpen] = [props.open, props.setOpen];
     const path = props.path
-    const notistackRef = React.createRef();
-    const onClickDismiss = key => () => {
-        notistackRef.current.closeSnackbar(key);
-    }
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
             return;
         }
 
+        props.enqueueSnackbar("something");
         setOpen(false);
     };
 
     return (
+        //TODO: Move this to another component
         <SnackbarProvider
-            ref={notistackRef}
             action={(key) => (
                 <React.Fragment>
                     <IconButton size="small" aria-label="close" color="inherit" onClick={onClickDismiss(key)}>
@@ -44,3 +41,5 @@ export default function CreateToast(props) {
         </SnackbarProvider>
     )
 }
+
+export default CreateToast;
