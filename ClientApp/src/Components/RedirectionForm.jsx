@@ -54,8 +54,8 @@ export default function RedirectionForm(props) {
         ev.preventDefault();
         let ttl = null;
         let missing = [];
-        URL === "" ? missing.push("URL") : null;
-        passphrase === "" ? missing.push("passphrase") : null;
+        if (URL === "") { missing.push("URL") };
+        if (passphrase === "") { missing.push("passphrase") };
         if (missing.length !== 0) {
             enqueueSnackbar(`Please include a ${missing.join(' and ')}.`, {
                 variant: 'warning',
@@ -85,17 +85,26 @@ export default function RedirectionForm(props) {
                 setLoading(false);
                 if (response.status === 200) {
                     response.text().then(text => {
-                        enqueueSnackbar(`Created shortened link at ${text}`, {
+                        enqueueSnackbar(`Created shortened link at ${text}.`, {
                             variant: 'success',
                             action
                         });
                     });
                 }
                 else {
-                    response.json().then(json => console.log(json));
+                    response.json().then(json => {
+                        enqueueSnackbar("Could not create the shortened link", {
+                            variant: 'error',
+                            action
+                        });
+                    });
                 }
             })
             .catch(((_) => {
+                enqueueSnackbar("Could not create the shortened link", {
+                    variant: 'error',
+                    action
+                });
                 setLoading(false);
             }))
     };
