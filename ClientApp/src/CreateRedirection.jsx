@@ -54,7 +54,7 @@ function SignIn() {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Shorten & Encrypt URL
+          Shorten & Protect URL
           </Typography>
         <SnackbarProvider>
           <RedirectionForm />

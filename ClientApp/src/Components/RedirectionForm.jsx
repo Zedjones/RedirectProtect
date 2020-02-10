@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, Fragment } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Fade from '@material-ui/core/Fade';
 import { DateTime } from "luxon"
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { Grid } from '@material-ui/core';
+import { Grid, IconButton } from '@material-ui/core';
+import CloseIcon from '@material-ui/icons/Close';
 
 import RedirectionFormText from './RedirectionFormText';
 import RedirectionFormTime from './RedirectionFormTime';
-import CreateToast from '../CreateToast';
 import { useSnackbar } from 'notistack';
 
 const useStyles = makeStyles(theme => ({
@@ -32,13 +32,37 @@ export default function RedirectionForm(props) {
     const [durationEnabled, handleDurationEnableChange] = useState(false);
     const [loading, setLoading] = useState(false);
     const [selectedDate, handleDateChange] = useState(new DateTime.fromObject({ hours: 0, minutes: 0 }));
-    const [toastOpen, setToastOpen] = useState(false);
-    const [lastPath, setLastPath] = useState('');
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+    const onClickDismiss = key => () => {
+        closeSnackbar(key);
+    }
+
+    const action = key => (
+        <React.Fragment>
+            <IconButton
+                size="small"
+                aria-label="close"
+                color="inherit"
+                onClick={onClickDismiss(key)}
+            >
+                <CloseIcon fontSize="small" />
+            </IconButton>
+        </React.Fragment>
+    )
 
     function createShortened(ev) {
         ev.preventDefault();
         let ttl = null;
+        let missing = [];
+        URL === "" ? missing.push("URL") : null;
+        passphrase === "" ? missing.push("passphrase") : null;
+        if (missing.length !== 0) {
+            enqueueSnackbar(`Please include a ${missing.join(' and ')}.`, {
+                variant: 'warning',
+                action
+            });
+            return;
+        }
         if (durationEnabled && selectedDate.c != null) {
             ttl = selectedDate.toISO()
         }
@@ -61,9 +85,10 @@ export default function RedirectionForm(props) {
                 setLoading(false);
                 if (response.status === 200) {
                     response.text().then(text => {
-                        //TODO: update this for our new enqueueSnackbar approach
-                        let myStr = `Created shortened link at ${text}`;
-                        enqueueSnackbar(myStr);
+                        enqueueSnackbar(`Created shortened link at ${text}`, {
+                            variant: 'success',
+                            action
+                        });
                     });
                 }
                 else {
@@ -94,7 +119,7 @@ export default function RedirectionForm(props) {
                     className={classes.submit}
                     disabled={loading}
                 >
-                    Encrypt
+                    Shorten
                 </Button>
             </form>
             <Fade
