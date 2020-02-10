@@ -8,6 +8,7 @@ import Container from '@material-ui/core/Container';
 import lifecycle from 'react-pure-lifecycle';
 import { Grid } from '@material-ui/core';
 import RedirectionForm from './Components/RedirectionForm';
+import { SnackbarProvider } from "notistack";
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -55,7 +56,9 @@ function SignIn() {
         <Typography component="h1" variant="h5">
           Shorten & Encrypt URL
           </Typography>
-        <RedirectionForm />
+        <SnackbarProvider>
+          <RedirectionForm />
+        </SnackbarProvider>
       </Grid>
     </Container >
   );

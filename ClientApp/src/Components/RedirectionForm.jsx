@@ -9,6 +9,7 @@ import { Grid } from '@material-ui/core';
 import RedirectionFormText from './RedirectionFormText';
 import RedirectionFormTime from './RedirectionFormTime';
 import CreateToast from '../CreateToast';
+import { useSnackbar } from 'notistack';
 
 const useStyles = makeStyles(theme => ({
     form: {
@@ -21,7 +22,7 @@ const useStyles = makeStyles(theme => ({
     paper: {
         display: "flex",
         alignItems: "center",
-      },
+    },
 }));
 
 export default function RedirectionForm(props) {
@@ -33,6 +34,7 @@ export default function RedirectionForm(props) {
     const [selectedDate, handleDateChange] = useState(new DateTime.fromObject({ hours: 0, minutes: 0 }));
     const [toastOpen, setToastOpen] = useState(false);
     const [lastPath, setLastPath] = useState('');
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
     function createShortened(ev) {
         ev.preventDefault();
@@ -60,8 +62,8 @@ export default function RedirectionForm(props) {
                 if (response.status === 200) {
                     response.text().then(text => {
                         //TODO: update this for our new enqueueSnackbar approach
-                        setLastPath(text);
-                        setToastOpen(true);
+                        let myStr = `Created shortened link at ${text}`;
+                        enqueueSnackbar(myStr);
                     });
                 }
                 else {
@@ -84,7 +86,6 @@ export default function RedirectionForm(props) {
                     selectedDate={selectedDate}
                     handleDateChange={handleDateChange}
                 />
-                <CreateToast open={toastOpen} setOpen={setToastOpen} path={lastPath}></CreateToast>
                 <Button
                     type="submit"
                     fullWidth

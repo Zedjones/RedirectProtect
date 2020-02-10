@@ -18,7 +18,6 @@ function CreateToast(props) {
             return;
         }
 
-        props.enqueueSnackbar("something");
         setOpen(false);
     };
 
