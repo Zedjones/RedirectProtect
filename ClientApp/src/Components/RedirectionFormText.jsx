@@ -3,6 +3,7 @@ import TextField from '@material-ui/core/TextField';
 
 export default function RedirectionFormText(props) {
     const [setURL, setPassphrase] = [props.setURL, props.setPassphrase];
+    const loading = props.loading
 
     return (
         <div>

@@ -1,23 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Avatar from '@material-ui/core/Avatar';
-import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import Fade from '@material-ui/core/Fade';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import TextField from '@material-ui/core/TextField';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
-import Checkbox from '@material-ui/core/Checkbox';
 import { makeStyles } from '@material-ui/core/styles';
-import { KeyboardTimePicker } from "@material-ui/pickers";
 import Container from '@material-ui/core/Container';
 import lifecycle from 'react-pure-lifecycle';
-import { MuiPickersUtilsProvider } from "@material-ui/pickers";
-import LuxonUtils from "@date-io/luxon"
-import { DateTime } from "luxon"
-import AccessTimeIcon from "@material-ui/icons/AccessTime"
 import { Grid } from '@material-ui/core';
-import CreateToast from './CreateToast';
+import RedirectionForm from './Components/RedirectionForm';
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -54,51 +44,6 @@ const methods = {
 
 function SignIn() {
   const classes = useStyles();
-  const [selectedDate, handleDateChange] = useState(new DateTime.fromObject({ hours: 0, minutes: 0 }));
-  const [durationEnabled, handleDurationEnableChange] = useState(false);
-  const [URL, setURL] = useState('');
-  const [loading, setLoading] = React.useState(false);
-  const [passphrase, setPassphrase] = useState('');
-  const [toastOpen, setToastOpen] = useState(false);
-  const [lastPath, setLastPath] = useState('');
-
-  function createShortened(ev) {
-    ev.preventDefault();
-    let ttl = null;
-    if (durationEnabled && selectedDate.c != null) {
-      ttl = selectedDate.toISO()
-    }
-    let redirect = {
-      "URL": URL,
-      "Password": passphrase,
-      "TTL": ttl
-    }
-
-    setLoading(true);
-    fetch('api/redirect', {
-      method: 'POST',
-      body: JSON.stringify(redirect),
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-    })
-      .then(response => {
-        setLoading(false);
-        if (response.status === 200) {
-          response.text().then(text => {
-            setLastPath(text);
-            setToastOpen(true);
-          });
-        }
-        else {
-          response.json().then(json => console.log(json));
-        }
-      })
-      .catch(((_) => {
-        setLoading(false);
-      }))
-  };
 
   return (
     <Container component="main" maxWidth="xs">
@@ -110,88 +55,7 @@ function SignIn() {
         <Typography component="h1" variant="h5">
           Shorten & Encrypt URL
           </Typography>
-        <form className={classes.form} noValidate onSubmit={(e) => createShortened(e)}>
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            disabled={loading}
-            fullWidth
-            id="url"
-            label="URL"
-            name="url"
-            onChange={(ev) => setURL(ev.target.value)}
-            autoComplete="url"
-            type="url"
-            autoFocus
-          />
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            disabled={loading}
-            fullWidth
-            name="password"
-            label="Passphrase"
-            type="password"
-            id="password"
-            onChange={(ev) => setPassphrase(ev.target.value)}
-            autoComplete="current-password"
-          />
-          <Grid container direction='row' alignItems='center'>
-            <Grid item xs={2}>
-              <Checkbox
-                checked={durationEnabled}
-                disabled={loading}
-                onChange={(event) => handleDurationEnableChange(event.target.checked)}
-                inputProps={{
-                  'aria-label': 'primary checkbox',
-                }}
-              />
-            </Grid>
-            <Grid item xs={10}>
-              <MuiPickersUtilsProvider utils={LuxonUtils}>
-                <KeyboardTimePicker
-                  clearable
-                  ampm={false}
-                  disabled={!durationEnabled || loading}
-                  margin="normal"
-                  autoOk={true}
-                  views={["hours", "minutes"]}
-                  inputVariant="outlined"
-                  label="Shortened URL Lifespan"
-                  openTo="minutes"
-                  format="HH:mm"
-                  keyboardIcon={React.createElement(AccessTimeIcon, null)}
-                  placeholder="hh:mm"
-                  value={selectedDate}
-                  style={{ width: "100%" }}
-                  onChange={(val) => { handleDateChange(val); console.log(selectedDate) }}
-                />
-              </MuiPickersUtilsProvider>
-            </Grid>
-          </Grid>
-          <CreateToast open={toastOpen} setOpen={setToastOpen} path={lastPath}></CreateToast>
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
-            className={classes.submit}
-            disabled={loading}
-          >
-            Encrypt
-          </Button>
-        </form>
-        <Fade
-          in={loading}
-          style={{
-            transitionDelay: loading ? '800ms' : '0ms',
-          }}
-          unmountOnExit
-        >
-          <CircularProgress />
-        </Fade>
+        <RedirectionForm />
       </Grid>
     </Container >
   );
