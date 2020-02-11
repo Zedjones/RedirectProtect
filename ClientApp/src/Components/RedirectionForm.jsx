@@ -5,8 +5,10 @@ import Fade from '@material-ui/core/Fade';
 import { DateTime } from "luxon"
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Grid, IconButton } from '@material-ui/core';
+import { ContentCopyIcon } from '../Icons/ContentCopy';
 import CloseIcon from '@material-ui/icons/Close';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import copy from 'clipboard-copy';
 
 import RedirectionFormText from './RedirectionFormText';
 import RedirectionFormTime from './RedirectionFormTime';
@@ -54,6 +56,14 @@ export default function RedirectionForm(props) {
     const successAction = (link) => (
         (key) => (
             <React.Fragment>
+                <IconButton
+                    size="small"
+                    aria-label="close"
+                    color="inherit"
+                    onClick={() => copy(window.location.origin + `/${link}`)}
+                >
+                    <ContentCopyIcon fontSize="small" />
+                </IconButton>
                 <IconButton
                     size="small"
                     aria-label="close"
