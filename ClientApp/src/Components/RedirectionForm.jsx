@@ -53,9 +53,8 @@ export default function RedirectionForm(props) {
     function createShortened(ev) {
         ev.preventDefault();
         let ttl = null;
-        let missing = [];
-        if (URL === "") { missing.push("URL") };
-        if (passphrase === "") { missing.push("passphrase") };
+        let missing = [[URL, "URL"], [passphrase, "passphrase"]]
+            .filter(x => x[0] === "").map(x => x[1]);
         if (missing.length !== 0) {
             enqueueSnackbar(`Please include a ${missing.join(' and ')}.`, {
                 variant: 'warning',
