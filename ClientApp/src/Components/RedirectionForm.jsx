@@ -6,6 +6,7 @@ import { DateTime } from "luxon"
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Grid, IconButton } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
+import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 
 import RedirectionFormText from './RedirectionFormText';
 import RedirectionFormTime from './RedirectionFormTime';
@@ -50,6 +51,22 @@ export default function RedirectionForm(props) {
         </React.Fragment>
     )
 
+    const successAction = (link) => (
+        (key) => (
+            <React.Fragment>
+                <IconButton
+                    size="small"
+                    aria-label="close"
+                    color="inherit"
+                    onClick={() => window.open(link, "_blank")}
+                >
+                    <OpenInNewIcon fontSize="small" />
+                </IconButton>
+                {action(key)}
+            </React.Fragment>
+        )
+    )
+
     function createShortened(ev) {
         ev.preventDefault();
         let ttl = null;
@@ -83,10 +100,11 @@ export default function RedirectionForm(props) {
             .then(response => {
                 setLoading(false);
                 if (response.status === 200) {
+                    console.log(response.status)
                     response.text().then(text => {
                         enqueueSnackbar(`Created shortened link at ${text}.`, {
                             variant: 'success',
-                            action
+                            action: successAction(text.replace(/"/gi, ""))
                         });
                     });
                 }
