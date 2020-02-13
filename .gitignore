@@ -233,3 +233,6 @@ _Pvt_Extensions
 
 # Environmental variables files
 .env
+
+# Coverage file
+coverage.json

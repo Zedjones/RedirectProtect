@@ -8,7 +8,16 @@ using System;
 
 namespace RedirectProtect.Services
 {
-    public class RedirectService
+    public interface IRedirectService
+    {
+        bool RedirectExists(Redirect redir);
+        Redirect GetRedirect(string path);
+        List<Redirect> GetRedirects();
+        void DeleteRedirect(string path);
+        void DeleteRedirect(Redirect redirIn);
+        Redirect Create(RedirectDto redirect);
+    }
+    public class RedirectService : IRedirectService
     {
         private readonly IMongoCollection<Redirect> _redirects;
         private readonly ILogger<RedirectService> _logger;
@@ -45,13 +54,11 @@ namespace RedirectProtect.Services
         private bool PathExists(string path) =>
             _redirects.Find(redirect => redirect.Path == path).CountDocuments() == 1;
 
-        public bool RedirectExists(Redirect redir) => 
+        public bool RedirectExists(Redirect redir) =>
             _redirects.Find(redirect => redirect.Id == redir.Id && redirect.Path == redir.Path).CountDocuments() == 1;
 
         public Redirect GetRedirect(string path) =>
             _redirects.Find(redirect => redirect.Path == path).FirstOrDefault();
-
-        public IMongoCollection<Redirect> GetRedirectCollection() => _redirects;
 
         public List<Redirect> GetRedirects() =>
             _redirects.Find(_ => true).ToList();

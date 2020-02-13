@@ -8,8 +8,8 @@ namespace RedirectProtect.Controllers
     [Route("/")]
     public class MainController : Controller
     {
-        private readonly RedirectService _redirectService;
-        public MainController(RedirectService redirectService)
+        private readonly IRedirectService _redirectService;
+        public MainController(IRedirectService redirectService)
         {
             _redirectService = redirectService;
         }
