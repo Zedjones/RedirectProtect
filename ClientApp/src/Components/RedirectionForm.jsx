@@ -77,6 +77,7 @@ export default function RedirectionForm(props) {
         )
     )
 
+    //TODO: clean up this function, potentially use 'url-exists' node package to verify url
     function createShortened(ev) {
         ev.preventDefault();
         let ttl = null;
